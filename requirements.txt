@@ -1,0 +1,11 @@
+﻿pydantic>=2
+streamlit
+pytest
+ruff
+langchain
+langgraph
+langchain-google-genai
+chromadb
+pypdf
+oci
+langchain-ollama
