@@ -89,7 +89,7 @@ def procesar(solicitud: Solicitud) -> Respuesta:
     try:
         guardar(clave, contenido.model_dump_json().encode("utf-8"))
         status_upload = "completado"
-    except Exception:
+    except Exception:  # noqa: BLE001
         status_upload = "fallido"
 
     return Respuesta(

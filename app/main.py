@@ -3,17 +3,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from dotenv import load_dotenv  # noqa: E402
+from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-import base64  # noqa: E402
+import base64
 
-import streamlit as st  # noqa: E402
+import streamlit as st
+from componente import render_ui
 
-from componente import render_ui  # noqa: E402
-from nuevamente.contratos import Solicitud, procesar  # noqa: E402
-from nuevamente.ingesta import leer_documento  # noqa: E402
+from nuevamente.contratos import Solicitud, procesar
+from nuevamente.ingesta import leer_documento
 
 st.set_page_config(layout="wide")
 

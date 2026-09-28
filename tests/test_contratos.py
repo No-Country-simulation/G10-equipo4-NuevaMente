@@ -3,7 +3,14 @@
 import pytest
 from pydantic import ValidationError
 
-from nuevamente.contratos import Chunk, ContenidoAdaptado, EvaluacionCalidad, ItemFlashcard, Solicitud, procesar
+from nuevamente.contratos import (
+    Chunk,
+    ContenidoAdaptado,
+    EvaluacionCalidad,
+    ItemFlashcard,
+    Solicitud,
+    procesar,
+)
 
 
 def hacer_solicitud_de_ejemplo(**overrides) -> Solicitud:

@@ -1,7 +1,13 @@
 ﻿from unittest.mock import patch
 
 from nuevamente.agentes import generar
-from nuevamente.contratos import Chunk, ContenidoAdaptado, EvaluacionCalidad, ItemFlashcard, Solicitud
+from nuevamente.contratos import (
+    Chunk,
+    ContenidoAdaptado,
+    EvaluacionCalidad,
+    ItemFlashcard,
+    Solicitud,
+)
 
 
 def hacer_solicitud() -> Solicitud:
