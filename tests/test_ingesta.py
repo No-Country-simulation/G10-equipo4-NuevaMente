@@ -1,5 +1,6 @@
-﻿import pytest
-from unittest.mock import MagicMock, patch
+﻿from unittest.mock import MagicMock, patch
+
+import pytest
 
 from nuevamente.ingesta import leer_documento
 
@@ -10,7 +11,7 @@ def test_leer_txt():
 
 
 def test_leer_md():
-    resultado = leer_documento("nota.md", "# Titulo".encode("utf-8"))
+    resultado = leer_documento("nota.md", b"# Titulo")
     assert resultado == "# Titulo"
 
 
