@@ -17,6 +17,26 @@ from nuevamente.ingesta import leer_documento
 
 st.set_page_config(layout="wide")
 
+# Ajustar el estilo para que el iframe del componente ocupe todo el ancho y no haya padding
+st.markdown(
+    """
+    <style>
+    .block-container {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+    iframe {
+        width: 100% !important;
+        border: none !important;
+    }
+    header[data-testid="stHeader"] {
+        background: transparent;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 opciones = {
     "perfiles": ["Principiante", "Junior", "Lider Tecnico", "Ejecutivo"],
     "formatos": ["Flashcards", "Tutorial", "Quiz", "TLDR", "Guion"],
@@ -28,23 +48,31 @@ if "resultado" not in st.session_state:
     st.session_state.resultado = None
 if "ultimo_id" not in st.session_state:
     st.session_state.ultimo_id = None
+if "error" not in st.session_state:
+    st.session_state.error = None
 
-valor = render_ui(opciones=opciones, resultado=st.session_state.resultado)
+valor = render_ui(opciones=opciones, resultado=st.session_state.resultado, error=st.session_state.error)
 
 if valor and valor.get("accion") == "generar" and valor.get("id") != st.session_state.ultimo_id:
     st.session_state.ultimo_id = valor["id"]
-    contenido_bytes = base64.b64decode(valor["archivo_base64"])
-    contenido_texto = leer_documento(valor["archivo_nombre"], contenido_bytes)
-    solicitud = Solicitud(
-        documento_titulo=valor["archivo_nombre"],
-        documento_contenido=contenido_texto,
-        perfil_destinatario=valor["perfil"],
-        formato_salida=valor["formato"],
-        nicho_sector=valor["nicho"],
-        nivel_detalle=valor["nivel"],
-    )
-    with st.spinner("Generando contenido..."):
-        respuesta = procesar(solicitud)
-    st.session_state.resultado = respuesta.model_dump()
+    try:
+        contenido_bytes = base64.b64decode(valor["archivo_base64"])
+        contenido_texto = leer_documento(valor["archivo_nombre"], contenido_bytes)
+        if not contenido_texto.strip():
+            raise ValueError("No se pudo extraer texto del documento. Si es un PDF escaneado, prueba con uno que tenga texto seleccionable.")
+        solicitud = Solicitud(
+            documento_titulo=valor["archivo_nombre"],
+            documento_contenido=contenido_texto,
+            perfil_destinatario=valor["perfil"],
+            formato_salida=valor["formato"],
+            nicho_sector=valor["nicho"],
+            nivel_detalle=valor["nivel"],
+        )
+        with st.spinner("Generando contenido..."):
+            respuesta = procesar(solicitud)
+        st.session_state.resultado = {**respuesta.model_dump(), "id_solicitud": valor["id"]}
+        st.session_state.error = None
+    except Exception as exc:  # noqa: BLE001
+        st.session_state.error = {"mensaje": str(exc), "id": valor["id"]}
     st.rerun()
 
