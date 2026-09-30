@@ -8,10 +8,44 @@ from langchain_ollama import ChatOllama
 from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel
 
-from nuevamente.contratos import Chunk, ContenidoAdaptado, EvaluacionCalidad, Solicitud
+from nuevamente.contratos import (
+    MODELOS_POR_FORMATO,
+    Chunk,
+    Contenido,
+    EvaluacionCalidad,
+    Solicitud,
+)
 
 UMBRAL_ANCLAJE = 0.7
 MAX_INTENTOS = 2
+
+INSTRUCCIONES_POR_FORMATO = {
+    "Flashcards": (
+        "Crea entre 6 y 10 flashcards. 'frente' es una pregunta o concepto corto (maximo 12 palabras), "
+        "'dorso' la respuesta en 1 a 3 frases y 'pista_didactica' una analogia o ayuda para recordar."
+    ),
+    "Tutorial": (
+        "Crea un tutorial paso a paso de 4 a 7 pasos en orden logico. Cada paso tiene una explicacion clara, "
+        "un 'ejemplo' concreto (codigo o comando si el documento es tecnico, vacio si no aplica) y un 'consejo' "
+        "con un error comun a evitar. Incluye de 2 a 5 objetivos y una conclusion breve."
+    ),
+    "Quiz": (
+        "Crea entre 6 y 10 preguntas de evaluacion. Mezcla opcion multiple (4 opciones) con algunas de verdadero/falso "
+        "(opciones exactamente ['Verdadero', 'Falso']). Solo una opcion es correcta y 'indice_correcto' es su posicion "
+        "empezando en 0. Los distractores deben ser plausibles, sin 'todas las anteriores' ni 'ninguna de las anteriores'. "
+        "No antepongas letras ni numeros a las opciones. La 'explicacion' justifica la respuesta con la fuente y la "
+        "'pista' orienta sin revelarla."
+    ),
+    "TLDR": (
+        "Crea un resumen ejecutivo: 'resumen_una_linea' con la idea central en una frase, de 3 a 6 'puntos_clave' "
+        "(titulo corto y detalle de 1 a 2 frases) y de 2 a 4 'acciones_recomendadas' concretas."
+    ),
+    "Guion": (
+        "Crea un guion para un video o presentacion oral de 4 a 7 escenas. Cada escena tiene la 'narracion' tal cual "
+        "se leeria en voz alta, el 'apoyo_visual' que aparece en pantalla y su 'duracion_segundos' realista "
+        "(aproximadamente 150 palabras por minuto). Cierra con un 'cierre' que invite a la accion."
+    ),
+}
 
 _llm_primario = None
 _llm_fallback = None
@@ -57,7 +91,7 @@ class EstadoAgente(TypedDict):
     solicitud: Solicitud
     chunks: list[Chunk]
     hallazgos: str
-    contenido: ContenidoAdaptado
+    contenido: Contenido
     evaluacion: EvaluacionCalidad
     intentos: int
 
@@ -66,14 +100,19 @@ def _investigar(solicitud: Solicitud, chunks: list[Chunk]) -> str:
     prompt = f"Extrae los puntos clave para un perfil '{solicitud.perfil_destinatario}':\n\n{contexto}"
     return _invocar(prompt).content
 
-def _redactar(solicitud: Solicitud, hallazgos: str) -> ContenidoAdaptado:
+def _redactar(solicitud: Solicitud, hallazgos: str) -> Contenido:
     prompt = (
-        f"Genera contenido en formato '{solicitud.formato_salida}' "
-        f"para un perfil '{solicitud.perfil_destinatario}' a partir de estos hallazgos:\n\n{hallazgos}"
+        f"Genera contenido educativo en espanol en formato '{solicitud.formato_salida}' "
+        f"para un perfil '{solicitud.perfil_destinatario}', con nivel de detalle '{solicitud.nivel_detalle}' "
+        f"y ejemplos del sector '{solicitud.nicho_sector}'.\n"
+        f"{INSTRUCCIONES_POR_FORMATO[solicitud.formato_salida]}\n"
+        "Usa solo informacion presente en los hallazgos. Texto plano, sin HTML; "
+        "puedes marcar codigo en linea con `backticks`.\n\n"
+        f"HALLAZGOS:\n{hallazgos}"
     )
-    return _invocar(prompt, ContenidoAdaptado)
+    return _invocar(prompt, MODELOS_POR_FORMATO[solicitud.formato_salida])
 
-def _criticar(contenido: ContenidoAdaptado, chunks: list[Chunk]) -> EvaluacionCalidad:
+def _criticar(contenido: Contenido, chunks: list[Chunk]) -> EvaluacionCalidad:
     contexto = "\n".join(chunk.texto for chunk in chunks)
     prompt = (
         "Evalua que tan fiel es el CONTENIDO a la FUENTE.\n"
@@ -112,6 +151,6 @@ def _construir_grafo():
 
 _grafo = _construir_grafo()
 
-def generar(solicitud: Solicitud, chunks: list[Chunk]) -> tuple[ContenidoAdaptado, EvaluacionCalidad]:
+def generar(solicitud: Solicitud, chunks: list[Chunk]) -> tuple[Contenido, EvaluacionCalidad]:
     estado_final = _grafo.invoke({"solicitud": solicitud, "chunks": chunks, "hallazgos": "", "intentos": 0})
     return estado_final["contenido"], estado_final["evaluacion"]

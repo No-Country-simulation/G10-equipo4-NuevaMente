@@ -27,6 +27,7 @@ Proyecto para el **Hackathon ONE Grupo 10** (Oracle Next Education & Alura). Des
 G10-equipo4-NuevaMente
 ├─ app
 │  ├─ componente.py       # Declaracion del componente custom de Streamlit
+│  ├─ demo.py             # Modo demo: UI completa sin LLM ni OCI
 │  ├─ frontend
 │  │  └─ index.html       # UI Neo-Brutalista (HTML/CSS/JS)
 │  └─ main.py             # Entry point de Streamlit
@@ -45,13 +46,28 @@ G10-equipo4-NuevaMente
 ├─ pytest.ini
 ├─ README.md
 ├─ requirements.txt
-└─ tests                  # Suite de pytest (19 tests)
+└─ tests                  # Suite de pytest (36 tests)
    ├─ test_agentes.py
    ├─ test_almacenamiento.py
    ├─ test_contratos.py
+   ├─ test_formatos.py
    ├─ test_ingesta.py
    └─ test_rag.py
 ```
+
+## Formatos de salida
+
+Cada formato tiene su propio modelo Pydantic (`MODELOS_POR_FORMATO` en `contratos.py`) y su propia vista en la UI:
+
+| Formato | Modelo | Vista en la UI |
+|---|---|---|
+| Flashcards | `ContenidoAdaptado` | Tarjetas con flip 3D que crecen segun el texto, boton "Voltear todas" y soporte de teclado |
+| Tutorial | `ContenidoTutorial` | Objetivos, pasos numerados con ejemplo (bloque de codigo si aplica), consejo y progreso marcando pasos |
+| Quiz | `ContenidoQuiz` | Una pregunta a la vez, opciones mezcladas, pista, correccion con explicacion, puntaje final, revision y "Repasar errores" |
+| TLDR | `ContenidoTLDR` | Idea central destacada, puntos clave y acciones recomendadas |
+| Guion | `ContenidoGuion` | Escenas con marcas de tiempo, narracion y apoyo visual, y modo "Solo narracion" |
+
+`PreguntaQuiz` valida que `indice_correcto` exista entre las opciones y que no haya opciones repetidas; si el LLM devuelve una pregunta invalida, el reintento de `with_retry` la vuelve a pedir.
 
 ## Como correr el proyecto localmente
 
@@ -85,7 +101,15 @@ OLLAMA_MODEL=qwen2.5:7b        # solo si LLM_PROVEEDOR=ollama
 streamlit run app/main.py
 ```
 
-### 4. Correr los tests
+### 4. Probar la UI sin LLM (modo demo)
+
+```powershell
+streamlit run app/demo.py
+```
+
+Usa el mismo componente y la misma lectura de archivos que `main.py`, pero responde con contenido de ejemplo de cada formato. No necesita `.env`, Gemini, Ollama ni OCI.
+
+### 5. Correr los tests
 
 ```powershell
 pytest
@@ -101,7 +125,8 @@ pytest
 - [x] UI custom con diseno Neo-Brutalista
 - [x] Integracion end-to-end verificada (PDF real -> flashcards generadas)
 - [ ] CI en GitHub Actions
-- [ ] Manejo de errores en UI (pendiente de pulir)
+- [x] Manejo de errores en UI (aviso en el formulario y boton con estado de carga)
+- [x] Contrato y vista propia para cada formato de salida
 
 ## Flujo de trabajo
 

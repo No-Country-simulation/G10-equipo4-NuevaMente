@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Google+Sans:wght@500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Google+Sans:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 <style>
   :root {
@@ -11,6 +12,11 @@
     --color-primario-container: #D3E3FD;
     --color-on-primario-container: #041E49;
     --color-secundario-container: #C2E7FF;
+    --color-acento: #FEF08A;
+    --color-exito: #BBF7D0;
+    --color-on-exito: #14532D;
+    --color-error: #FECACA;
+    --color-on-error: #7F1D1D;
     --color-superficie: #F4F7FC;
     --color-on-superficie: #111827;
     --color-on-superficie-variante: #4B5563;
@@ -31,9 +37,20 @@
     padding: 24px;
     overflow-x: hidden;
     position: relative;
+    line-height: 1.5;
   }
 
-  h1, h2, h3 { font-family: 'Google Sans', sans-serif; margin: 0; }
+  h1, h2, h3 { font-family: 'Google Sans', 'Montserrat', sans-serif; margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  code {
+    font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.88em;
+    background: var(--color-primario-container); border: 1px solid var(--color-contorno);
+    border-radius: 4px; padding: 0 4px; word-break: break-word;
+  }
+  button { font-family: 'Montserrat', sans-serif; }
+  :focus-visible { outline: 3px solid var(--color-primario); outline-offset: 3px; }
+  [tabindex="-1"]:focus { outline: none; }
+  .material-symbols-rounded { flex-shrink: 0; }
 
   .fondo-ambiental { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 
@@ -47,10 +64,12 @@
     transition: translate 0.4s ease-out;
   }
 
-  .blob-1 { width: 220px; height: 220px; background: #FEF08A; top: -60px; left: -60px; --parallax: -40px; }
+  .blob-1 { width: 220px; height: 220px; background: var(--color-acento); top: -60px; left: -60px; --parallax: -40px; }
   .blob-2 { width: 180px; height: 180px; background: var(--color-secundario-container); bottom: -50px; right: -40px; --parallax: 60px; }
 
   .contenedor-principal { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* ---------- Formulario ---------- */
 
   .tarjeta-formulario {
     background: rgba(255, 255, 255, 0.95);
@@ -73,13 +92,38 @@
     transition: background 0.15s;
   }
   .zona-drop.sobre-zona, .zona-drop:hover { background: var(--color-primario-container); }
+  .zona-drop.con-archivo { border-style: solid; background: var(--color-secundario-container); color: var(--color-on-primario-container); }
   .zona-drop .material-symbols-rounded { font-size: 40px; display: block; margin-bottom: 8px; }
+  .zona-drop p { word-break: break-word; }
 
-  .fila-selects { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-top: 24px; }
-  .fila-selects label { display: block; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; color: var(--color-primario); }
+  .etiqueta-campo {
+    display: block; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 6px; color: var(--color-primario);
+  }
+
+  .bloque-formato { margin-top: 24px; border: 0; padding: 0; margin-inline: 0; min-width: 0; }
+  .bloque-formato legend { padding: 0; margin-bottom: 8px; }
+  .selector-formato { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .opcion-formato { position: relative; }
+  .opcion-formato input { position: absolute; opacity: 0; pointer-events: none; }
+  .opcion-formato label {
+    display: flex; flex-direction: column; gap: 4px; height: 100%;
+    padding: 12px 14px; border: 2px solid var(--color-contorno); border-radius: 12px;
+    background: #FFFFFF; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .opcion-formato label:hover { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
+  .opcion-formato .nombre-formato { display: flex; align-items: center; gap: 6px; font-weight: 800; }
+  .opcion-formato .desc-formato { font-size: 0.78rem; color: var(--color-on-superficie-variante); font-weight: 500; line-height: 1.35; }
+  .opcion-formato input:checked + label {
+    background: var(--color-primario); color: var(--color-on-primario); box-shadow: var(--sombra-sm); transform: translate(-2px, -2px);
+  }
+  .opcion-formato input:checked + label .desc-formato { color: var(--color-primario-container); }
+  .opcion-formato input:focus-visible + label { outline: 3px solid var(--color-primario); outline-offset: 3px; }
+
+  .fila-selects { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-top: 20px; }
   .fila-selects select {
     width: 100%; padding: 10px 12px; border: 2px solid var(--color-contorno); border-radius: 8px;
-    font-family: 'Montserrat', sans-serif; font-weight: 600; background: #FFFFFF;
+    font-family: 'Montserrat', sans-serif; font-weight: 600; background: #FFFFFF; color: var(--color-on-superficie);
   }
 
   .boton-primario {
@@ -89,7 +133,33 @@
     font-family: 'Montserrat', sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
     cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
   }
-  .boton-primario:hover { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
+  .boton-primario:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
+  .boton-primario:disabled { cursor: not-allowed; opacity: 0.55; }
+  .boton-primario.cargando { opacity: 1; cursor: progress; }
+  .boton-primario.cargando .material-symbols-rounded { animation: girar 1s linear infinite; }
+
+  .boton-secundario {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 9999px; border: 2px solid var(--color-contorno);
+    background: #FFFFFF; color: var(--color-on-superficie); font-weight: 700; font-size: 0.85rem;
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .boton-secundario:hover { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
+  .boton-secundario[aria-pressed="true"] { background: var(--color-acento); }
+  .boton-secundario .material-symbols-rounded { font-size: 20px; }
+
+  @keyframes girar { to { transform: rotate(360deg); } }
+
+  .aviso {
+    display: flex; gap: 12px; align-items: flex-start; margin-top: 20px; padding: 14px 16px;
+    border: 3px solid var(--color-contorno); border-radius: 12px; box-shadow: var(--sombra-sm);
+    background: var(--color-error); color: var(--color-on-error); font-weight: 600;
+  }
+  .aviso strong { display: block; }
+  .aviso p { font-weight: 500; margin-top: 2px; word-break: break-word; }
+  .aviso[hidden] { display: none; }
+
+  /* ---------- Resultado: estructura comun ---------- */
 
   .tarjeta-resultado {
     background: rgba(255, 255, 255, 0.95);
@@ -99,23 +169,283 @@
     padding: 32px;
     margin-top: 24px;
   }
-  .intro-resultado { color: var(--color-on-superficie-variante); font-weight: 500; margin-top: 8px; }
+  .tarjeta-resultado > h2 { font-size: 1.7rem; word-break: break-word; }
+  .intro-resultado { color: var(--color-on-superficie-variante); font-weight: 500; margin-top: 8px; max-width: 72ch; }
 
-  .grid-flashcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
-  .flashcard-3d { height: 170px; cursor: pointer; perspective: 1000px; }
-  .flashcard-interior { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
+  .tarjeta-cargando { display: flex; align-items: center; gap: 16px; }
+  .tarjeta-cargando .material-symbols-rounded { font-size: 36px; color: var(--color-primario); animation: girar 1.2s linear infinite; }
+  .tarjeta-cargando p { color: var(--color-on-superficie-variante); font-weight: 500; }
+
+  .chips-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+    padding: 4px 12px; border: 2px solid var(--color-contorno); border-radius: 9999px;
+    background: #FFFFFF; font-size: 0.8rem; font-weight: 700;
+  }
+  .chip .material-symbols-rounded { font-size: 18px; }
+  .chip-texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip.nivel-alta { background: var(--color-exito); color: var(--color-on-exito); }
+  .chip.nivel-media { background: var(--color-acento); }
+  .chip.nivel-baja { background: var(--color-error); color: var(--color-on-error); }
+  .medidor { width: 48px; height: 8px; border: 2px solid var(--color-contorno); border-radius: 9999px; overflow: hidden; background: #FFFFFF; }
+  .medidor span { display: block; height: 100%; background: var(--color-contorno); }
+
+  .nota-critico {
+    display: flex; gap: 8px; align-items: flex-start; margin-top: 12px;
+    font-size: 0.85rem; color: var(--color-on-superficie-variante); font-weight: 500;
+  }
+  .nota-critico .material-symbols-rounded { font-size: 20px; }
+
+  .conceptos { margin-top: 12px; }
+  .conceptos summary { cursor: pointer; font-weight: 700; font-size: 0.85rem; color: var(--color-primario); width: fit-content; }
+  .conceptos .chips-meta { margin-top: 8px; }
+  .conceptos .chip { background: var(--color-primario-container); max-width: 280px; }
+
+  .cuerpo-formato { margin-top: 24px; padding-top: 24px; border-top: 3px solid var(--color-contorno); }
+
+  .barra-herramientas { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .ayuda { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; color: var(--color-on-superficie-variante); }
+  .ayuda .material-symbols-rounded { font-size: 20px; }
+
+  .titulo-seccion { display: flex; align-items: center; gap: 8px; font-size: 1.1rem; margin-bottom: 12px; }
+  .lista-iconos { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .lista-iconos li { display: flex; gap: 10px; align-items: flex-start; font-weight: 500; }
+  .lista-iconos .material-symbols-rounded { color: var(--color-primario); font-size: 22px; }
+
+  .bloque-cierre {
+    display: flex; gap: 12px; align-items: flex-start; margin-top: 24px; padding: 18px 20px;
+    border: 3px solid var(--color-contorno); border-radius: 16px 4px 16px 16px;
+    background: var(--color-secundario-container); box-shadow: var(--sombra-sm); font-weight: 500;
+  }
+  .bloque-cierre strong { display: block; font-family: 'Google Sans', 'Montserrat', sans-serif; margin-bottom: 2px; }
+
+  .estado-vacio { text-align: center; padding: 24px; color: var(--color-on-superficie-variante); font-weight: 600; }
+
+  /* ---------- Flashcards ---------- */
+
+  .grid-flashcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+  .flashcard-3d { display: grid; min-height: 190px; cursor: pointer; perspective: 1000px; border-radius: 16px; }
+  .flashcard-interior { display: grid; position: relative; transition: transform 0.5s; transform-style: preserve-3d; }
   .flashcard-3d.volteada .flashcard-interior { transform: rotateY(180deg); }
   .flashcard-cara {
-    position: absolute; inset: 0; backface-visibility: hidden;
-    border: 3px solid var(--color-contorno); border-radius: 16px; padding: 16px;
-    overflow-y: auto; box-shadow: var(--sombra-sm);
+    grid-area: 1 / 1; display: flex; flex-direction: column; gap: 10px;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border: 3px solid var(--color-contorno); border-radius: 16px; padding: 18px;
+    box-shadow: var(--sombra-sm); word-break: break-word;
   }
   .flashcard-frente {
     background: var(--color-primario-container); color: var(--color-on-primario-container);
-    font-weight: 700; display: flex; align-items: center; font-size: 1.05rem;
+    font-weight: 700; font-size: 1.05rem; justify-content: space-between;
   }
-  .flashcard-dorso { background: #FFFFFF; transform: rotateY(180deg); font-size: 0.85rem; }
-  .flashcard-dorso em { display: block; margin-top: 8px; color: var(--color-on-superficie-variante); }
+  .flashcard-frente .numero-tarjeta { font-size: 0.8rem; font-weight: 800; opacity: 0.7; }
+  .flashcard-frente .icono-voltear { align-self: flex-end; opacity: 0.6; }
+  .flashcard-dorso { background: #FFFFFF; transform: rotateY(180deg); font-size: 0.9rem; font-weight: 500; }
+  .flashcard-dorso .pista-tarjeta {
+    display: flex; gap: 6px; margin-top: auto; padding-top: 10px; border-top: 2px dashed var(--color-contorno);
+    font-size: 0.82rem; font-style: italic; color: var(--color-on-superficie-variante);
+  }
+  .flashcard-dorso .pista-tarjeta .material-symbols-rounded { font-size: 18px; font-style: normal; }
+
+  /* ---------- Tutorial ---------- */
+
+  .bloque-objetivos {
+    padding: 18px 20px; border: 3px solid var(--color-contorno); border-radius: 4px 16px 16px 16px;
+    background: var(--color-acento); box-shadow: var(--sombra-sm);
+  }
+  .bloque-objetivos .lista-iconos .material-symbols-rounded { color: var(--color-on-superficie); }
+
+  .progreso { margin: 24px 0 8px; }
+  .texto-progreso { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; }
+  .barra-progreso { height: 14px; border: 2px solid var(--color-contorno); border-radius: 9999px; background: #FFFFFF; overflow: hidden; }
+  .barra-progreso span { display: block; height: 100%; width: 0; background: var(--color-primario); transition: width 0.3s; }
+
+  .lista-pasos { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 0; }
+  .paso-tutorial { display: grid; grid-template-columns: 48px 1fr; gap: 16px; position: relative; padding-bottom: 24px; }
+  .paso-tutorial:not(:last-child)::before {
+    content: ""; position: absolute; left: 22px; top: 48px; bottom: 0; width: 4px; background: var(--color-contorno);
+  }
+  .numero-paso {
+    width: 48px; height: 48px; display: grid; place-items: center;
+    border: 3px solid var(--color-contorno); border-radius: 50%; background: #FFFFFF;
+    font-family: 'Google Sans', 'Montserrat', sans-serif; font-weight: 700; font-size: 1.2rem; box-shadow: var(--sombra-sm);
+  }
+  .paso-tutorial.completado .numero-paso { background: var(--color-exito); }
+  .cuerpo-paso {
+    min-width: 0; padding: 16px 18px; border: 3px solid var(--color-contorno); border-radius: 8px 16px 16px 16px;
+    background: #FFFFFF; display: grid; gap: 12px;
+  }
+  .paso-tutorial.completado .cuerpo-paso { background: #F0FDF4; }
+  .cuerpo-paso h3 { font-size: 1.1rem; word-break: break-word; }
+  .cuerpo-paso > p { max-width: 72ch; }
+
+  .bloque-codigo {
+    margin: 0; padding: 14px 16px; border: 2px solid var(--color-contorno); border-radius: 10px;
+    background: var(--color-on-superficie); color: #E5E7EB; overflow-x: auto; max-width: 100%;
+    font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.85rem; line-height: 1.55; white-space: pre;
+  }
+  .bloque-codigo code { background: none; border: 0; padding: 0; color: inherit; font-size: inherit; word-break: normal; }
+  .ejemplo-texto, .consejo {
+    display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px;
+    border: 2px solid var(--color-contorno); border-radius: 10px; font-size: 0.9rem; font-weight: 500;
+  }
+  .ejemplo-texto { background: var(--color-primario-container); }
+  .consejo { background: var(--color-acento); }
+  .ejemplo-texto .material-symbols-rounded, .consejo .material-symbols-rounded { font-size: 20px; }
+
+  .check-paso { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; width: fit-content; }
+  .check-paso input { width: 20px; height: 20px; accent-color: var(--color-primario); cursor: pointer; }
+
+  /* ---------- Quiz ---------- */
+
+  .quiz-cabecera { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-weight: 700; font-size: 0.9rem; }
+  .quiz-cabecera .marcador { display: inline-flex; align-items: center; gap: 4px; }
+  .quiz-cabecera .marcador .material-symbols-rounded { font-size: 20px; color: var(--color-primario); }
+  .quiz-cabecera + .barra-progreso { margin-top: 8px; }
+
+  .enunciado-quiz { font-size: 1.25rem; margin: 22px 0 16px; word-break: break-word; max-width: 72ch; outline: none; }
+  .tipo-pregunta { display: inline-block; margin-bottom: 8px; }
+
+  .opciones-quiz { display: grid; gap: 12px; }
+  .opciones-quiz.verdadero-falso { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .opcion-quiz {
+    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+    padding: 12px 16px; border: 3px solid var(--color-contorno); border-radius: 12px;
+    background: #FFFFFF; color: var(--color-on-superficie); font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+  }
+  .opcion-quiz:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
+  .opcion-quiz .letra-opcion {
+    width: 32px; height: 32px; display: grid; place-items: center; flex-shrink: 0;
+    border: 2px solid var(--color-contorno); border-radius: 8px; background: var(--color-superficie); font-weight: 800;
+  }
+  .opcion-quiz .texto-opcion { flex: 1; min-width: 0; word-break: break-word; }
+  .opcion-quiz .icono-estado { font-size: 26px; }
+  .opcion-quiz.seleccionada { background: var(--color-primario-container); box-shadow: var(--sombra-sm); transform: translate(-2px, -2px); }
+  .opcion-quiz.seleccionada .letra-opcion { background: var(--color-primario); color: var(--color-on-primario); }
+  .opcion-quiz:disabled { cursor: default; }
+  .opcion-quiz.correcta { background: var(--color-exito); color: var(--color-on-exito); box-shadow: var(--sombra-sm); }
+  .opcion-quiz.correcta .letra-opcion { background: var(--color-on-exito); color: #FFFFFF; }
+  .opcion-quiz.incorrecta { background: var(--color-error); color: var(--color-on-error); }
+  .opcion-quiz.incorrecta .letra-opcion { background: var(--color-on-error); color: #FFFFFF; }
+  .opcion-quiz.incorrecta .texto-opcion { text-decoration: line-through; }
+  .opcion-quiz.atenuada { opacity: 0.5; }
+
+  .pista-quiz {
+    display: flex; gap: 8px; margin-top: 14px; padding: 10px 14px;
+    border: 2px dashed var(--color-contorno); border-radius: 10px; background: var(--color-acento); font-weight: 500; font-size: 0.9rem;
+  }
+  .retro-quiz {
+    margin-top: 18px; padding: 14px 18px; border: 3px solid var(--color-contorno); border-radius: 4px 16px 16px 16px;
+    box-shadow: var(--sombra-sm); display: grid; gap: 6px; font-weight: 500;
+  }
+  .retro-quiz.acierto { background: var(--color-exito); color: var(--color-on-exito); }
+  .retro-quiz.fallo { background: var(--color-error); color: var(--color-on-error); }
+  .retro-quiz .veredicto { display: flex; align-items: center; gap: 8px; font-family: 'Google Sans', 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; }
+
+  .acciones-quiz { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
+  .acciones-quiz .boton-primario { margin-top: 0; }
+  .atajos { font-size: 0.78rem; color: var(--color-on-superficie-variante); font-weight: 500; }
+  .atajos kbd {
+    font-family: 'Montserrat', sans-serif; font-weight: 700; padding: 0 6px;
+    border: 2px solid var(--color-contorno); border-radius: 4px; background: #FFFFFF;
+  }
+
+  .resultado-quiz { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+  .puntaje-quiz {
+    width: 140px; height: 140px; display: grid; place-items: center; align-content: center;
+    border: 4px solid var(--color-contorno); border-radius: 40% 60% 55% 45% / 45% 50% 50% 55%;
+    box-shadow: var(--sombra-md); background: var(--color-acento);
+  }
+  .puntaje-quiz.nivel-alta { background: var(--color-exito); }
+  .puntaje-quiz.nivel-baja { background: var(--color-error); }
+  .puntaje-quiz .cifra { font-family: 'Google Sans', 'Montserrat', sans-serif; font-size: 2.4rem; font-weight: 700; line-height: 1; }
+  .puntaje-quiz .porcentaje { font-weight: 800; font-size: 0.9rem; }
+  .mensaje-quiz h3 { font-size: 1.4rem; }
+  .mensaje-quiz p { margin-top: 6px; color: var(--color-on-superficie-variante); font-weight: 500; }
+
+  .revision-quiz { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 12px; }
+  .item-revision {
+    display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 14px 16px;
+    border: 2px solid var(--color-contorno); border-radius: 12px; background: #FFFFFF;
+  }
+  .item-revision > .material-symbols-rounded { font-size: 26px; }
+  .item-revision.acierto > .material-symbols-rounded { color: #15803D; }
+  .item-revision.fallo > .material-symbols-rounded { color: #B91C1C; }
+  .item-revision h4 { margin: 0 0 6px; font-size: 0.95rem; word-break: break-word; }
+  .item-revision p { font-size: 0.85rem; font-weight: 500; word-break: break-word; }
+  .item-revision .explicacion-revision { margin-top: 6px; color: var(--color-on-superficie-variante); }
+
+  /* ---------- TL;DR ---------- */
+
+  .resumen-destacado {
+    display: flex; gap: 14px; align-items: flex-start; padding: 22px 24px;
+    border: 4px solid var(--color-contorno); border-radius: 24px 8px 24px 24px; box-shadow: var(--sombra-md);
+    background: var(--color-acento); font-family: 'Google Sans', 'Montserrat', sans-serif;
+    font-size: 1.35rem; font-weight: 700; line-height: 1.35;
+  }
+  .resumen-destacado .material-symbols-rounded { font-size: 36px; }
+  .resumen-destacado p { word-break: break-word; }
+  .grid-puntos { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 28px; }
+  .punto-clave {
+    padding: 16px 18px; border: 3px solid var(--color-contorno); border-radius: 8px 16px 16px 16px;
+    background: #FFFFFF; box-shadow: var(--sombra-sm); display: grid; gap: 6px; align-content: start;
+  }
+  .punto-clave h3 { font-size: 1.02rem; word-break: break-word; }
+  .punto-clave p { font-size: 0.9rem; font-weight: 500; color: var(--color-on-superficie-variante); word-break: break-word; }
+  .bloque-acciones { margin-top: 28px; }
+
+  /* ---------- Guion ---------- */
+
+  .linea-tiempo { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+  .escena {
+    border: 3px solid var(--color-contorno); border-radius: 8px 16px 16px 16px; background: #FFFFFF;
+    box-shadow: var(--sombra-sm); overflow: hidden;
+  }
+  .cabecera-escena {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 16px;
+    background: var(--color-primario-container); border-bottom: 3px solid var(--color-contorno);
+  }
+  .cabecera-escena h3 { font-size: 1.02rem; flex: 1; min-width: 180px; word-break: break-word; }
+  .marca-tiempo {
+    display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px;
+    border: 2px solid var(--color-contorno); border-radius: 9999px; background: #FFFFFF; font-weight: 800; font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .marca-tiempo .material-symbols-rounded { font-size: 16px; }
+  .columnas-escena { display: grid; grid-template-columns: 3fr 2fr; }
+  .narracion, .apoyo-visual { padding: 16px; display: flex; gap: 10px; align-items: flex-start; min-width: 0; }
+  .narracion p { font-size: 1rem; font-weight: 500; line-height: 1.6; word-break: break-word; }
+  .narracion .material-symbols-rounded { color: var(--color-primario); }
+  .apoyo-visual {
+    border-left: 3px dashed var(--color-contorno); background: var(--color-superficie);
+    font-size: 0.88rem; font-weight: 500; color: var(--color-on-superficie-variante);
+  }
+  .apoyo-visual p { word-break: break-word; }
+  .modo-narracion .columnas-escena { grid-template-columns: 1fr; }
+  .modo-narracion .apoyo-visual { display: none; }
+  .modo-narracion .narracion p { font-size: 1.2rem; }
+
+  /* ---------- Responsivo y accesibilidad ---------- */
+
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .tarjeta-formulario, .tarjeta-resultado { padding: 20px; }
+    .titulo-form { font-size: 1.3rem; }
+    .tarjeta-resultado > h2 { font-size: 1.35rem; }
+    .paso-tutorial { grid-template-columns: 36px 1fr; gap: 10px; }
+    .numero-paso { width: 36px; height: 36px; font-size: 1rem; }
+    .paso-tutorial:not(:last-child)::before { left: 16px; top: 36px; }
+    .columnas-escena { grid-template-columns: 1fr; }
+    .apoyo-visual { border-left: 0; border-top: 3px dashed var(--color-contorno); }
+    .resultado-quiz { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .resumen-destacado { font-size: 1.1rem; padding: 16px; }
+    .atajos { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+    .blob { translate: none; }
+  }
 </style>
 </head>
 <body>
@@ -128,28 +458,56 @@
     <div class="tarjeta-formulario">
       <h2 class="titulo-form"><span class="material-symbols-rounded">upload_file</span> Sube tu documento tecnico</h2>
 
-      <div class="zona-drop" id="zona-drop">
-        <span class="material-symbols-rounded">description</span>
+      <div class="zona-drop" id="zona-drop" role="button" tabindex="0" aria-describedby="nombre-archivo">
+        <span class="material-symbols-rounded" id="icono-archivo">description</span>
         <p id="nombre-archivo">Arrastra tu PDF, MD o TXT aqui, o haz clic</p>
         <input type="file" id="archivo" accept=".pdf,.md,.txt" hidden>
       </div>
 
+      <fieldset class="bloque-formato">
+        <legend class="etiqueta-campo">Formato</legend>
+        <div class="selector-formato" id="formato"></div>
+      </fieldset>
+
       <div class="fila-selects">
-        <div><label>Perfil</label><select id="perfil"></select></div>
-        <div><label>Formato</label><select id="formato"></select></div>
-        <div><label>Nicho</label><select id="nicho"></select></div>
-        <div><label>Nivel</label><select id="nivel"></select></div>
+        <div><label class="etiqueta-campo" for="perfil">Perfil</label><select id="perfil"></select></div>
+        <div><label class="etiqueta-campo" for="nicho">Nicho</label><select id="nicho"></select></div>
+        <div><label class="etiqueta-campo" for="nivel">Nivel</label><select id="nivel"></select></div>
       </div>
 
-      <button id="btn-generar" class="boton-primario">
-        <span class="material-symbols-rounded">auto_awesome</span> Generar
+      <div class="aviso" id="aviso" role="alert" hidden>
+        <span class="material-symbols-rounded">error</span>
+        <div><strong id="aviso-titulo"></strong><p id="aviso-mensaje"></p></div>
+      </div>
+
+      <button id="btn-generar" class="boton-primario" type="button">
+        <span class="material-symbols-rounded">auto_awesome</span> <span id="texto-generar">Generar</span>
       </button>
     </div>
 
-    <div id="resultado"></div>
+    <div id="resultado" aria-live="polite"></div>
   </div>
 
   <script>
+    const EXTENSIONES_VALIDAS = ["pdf", "md", "txt"];
+    const LETRAS = ["A", "B", "C", "D", "E"];
+    const TEXTO_ZONA_DROP = "Arrastra tu PDF, MD o TXT aqui, o haz clic";
+
+    const INFO_FORMATOS = {
+      Flashcards: { etiqueta: "Flashcards", icono: "style", descripcion: "Tarjetas de pregunta y respuesta para memorizar" },
+      Tutorial: { etiqueta: "Tutorial", icono: "menu_book", descripcion: "Pasos guiados con ejemplos practicos" },
+      Quiz: { etiqueta: "Quiz", icono: "quiz", descripcion: "Preguntas con correccion al instante y puntaje" },
+      TLDR: { etiqueta: "TL;DR", icono: "bolt", descripcion: "Lo esencial del documento en un minuto" },
+      Guion: { etiqueta: "Guion", icono: "movie", descripcion: "Narracion por escenas para un video o charla" },
+    };
+
+    let ultimaClaveResultado = null;
+    let ultimoIdError = null;
+    let idSolicitudPendiente = null;
+    let estadoQuiz = null;
+
+    // ---------- Comunicacion con Streamlit ----------
+
     function enviarAStreamlit(tipo, datos) {
       window.parent.postMessage({ isStreamlitMessage: true, type: tipo, ...datos }, "*");
     }
@@ -157,6 +515,49 @@
     function ajustarAltura() {
       enviarAStreamlit("streamlit:setFrameHeight", { height: document.documentElement.scrollHeight });
     }
+
+    // ---------- Utilidades de texto ----------
+
+    function escaparHtml(texto) {
+      const reemplazos = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" };
+      return String(texto ?? "").replace(/[&<>"']/g, (caracter) => reemplazos[caracter]);
+    }
+
+    function formatearTexto(texto) {
+      return escaparHtml(texto)
+        .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+        .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
+        .replace(/\n/g, "<br>");
+    }
+
+    function limpiarBloqueCodigo(texto) {
+      return String(texto ?? "").replace(/^\s*```[\w+-]*\n?/, "").replace(/\n?```\s*$/, "").trim();
+    }
+
+    function pareceCodigo(texto) {
+      return /```|\n|[{};]|=>|^\s*(\$|>|npm |pip |git |docker |kubectl |oci |curl |select |def |function |const |import |from )/i.test(texto);
+    }
+
+    function formatearDuracion(segundosTotales) {
+      const minutos = Math.floor(segundosTotales / 60);
+      const segundos = Math.round(segundosTotales % 60);
+      return `${minutos}:${String(segundos).padStart(2, "0")}`;
+    }
+
+    function mezclar(lista) {
+      const copia = [...lista];
+      for (let i = copia.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copia[i], copia[j]] = [copia[j], copia[i]];
+      }
+      return copia;
+    }
+
+    function icono(nombre) {
+      return `<span class="material-symbols-rounded" aria-hidden="true">${nombre}</span>`;
+    }
+
+    // ---------- Formulario ----------
 
     function llenarSelect(id, valores) {
       const select = document.getElementById(id);
@@ -169,55 +570,648 @@
       });
     }
 
-    function mostrarResultado(resultado) {
-      const contenedor = document.getElementById("resultado");
-      if (!resultado) { contenedor.innerHTML = ""; return; }
-      const contenido = resultado.contenido_adaptado;
-      let html = `
-        <div class="tarjeta-resultado">
-          <h2>${contenido.titulo}</h2>
-          <p class="intro-resultado">${contenido.introduccion_contextualizada}</p>
-          <div class="grid-flashcards">`;
-      contenido.items.forEach((item) => {
-        html += `
-            <div class="flashcard-3d" onclick="this.classList.toggle('volteada')">
-              <div class="flashcard-interior">
-                <div class="flashcard-cara flashcard-frente">${item.frente}</div>
-                <div class="flashcard-cara flashcard-dorso"><p>${item.dorso}</p><em>${item.pista_didactica}</em></div>
-              </div>
-            </div>`;
-      });
-      html += `</div></div>`;
-      contenedor.innerHTML = html;
+    function llenarSelectorFormato(formatos) {
+      const contenedor = document.getElementById("formato");
+      if (contenedor.children.length > 0) return;
+      contenedor.innerHTML = formatos.map((formato, indice) => {
+        const info = INFO_FORMATOS[formato] || { etiqueta: formato, icono: "article", descripcion: "" };
+        return `
+          <div class="opcion-formato">
+            <input type="radio" name="formato" id="formato-${indice}" value="${escaparHtml(formato)}" ${indice === 0 ? "checked" : ""}>
+            <label for="formato-${indice}">
+              <span class="nombre-formato">${icono(info.icono)} ${escaparHtml(info.etiqueta)}</span>
+              <span class="desc-formato">${escaparHtml(info.descripcion)}</span>
+            </label>
+          </div>`;
+      }).join("");
     }
 
+    function formatoSeleccionado() {
+      const marcado = document.querySelector("input[name='formato']:checked");
+      return marcado ? marcado.value : "";
+    }
+
+    function mostrarAviso(titulo, mensaje) {
+      document.getElementById("aviso-titulo").textContent = titulo;
+      document.getElementById("aviso-mensaje").textContent = mensaje;
+      document.getElementById("aviso").hidden = false;
+      ajustarAltura();
+    }
+
+    function ocultarAviso() {
+      document.getElementById("aviso").hidden = true;
+    }
+
+    function ponerCargando(activo) {
+      const boton = document.getElementById("btn-generar");
+      boton.disabled = activo;
+      boton.classList.toggle("cargando", activo);
+      boton.querySelector(".material-symbols-rounded").textContent = activo ? "progress_activity" : "auto_awesome";
+      document.getElementById("texto-generar").textContent = activo ? "Generando..." : "Generar";
+    }
+
+    function mostrarCargando(formato) {
+      const info = INFO_FORMATOS[formato] || { etiqueta: formato };
+      estadoQuiz = null;
+      document.getElementById("resultado").innerHTML = `
+        <div class="tarjeta-resultado tarjeta-cargando">
+          ${icono("progress_activity")}
+          <div>
+            <h2>Preparando tu ${escaparHtml(info.etiqueta)}</h2>
+            <p>Leyendo el documento, generando el contenido y verificando que sea fiel a la fuente. Puede tardar un minuto.</p>
+          </div>
+        </div>`;
+    }
+
+    // ---------- Resultado: cabecera comun ----------
+
+    function detectarFormato(resultado) {
+      const formato = resultado.metadatos && resultado.metadatos.formato_generado;
+      if (formato && RENDERIZADORES[formato]) return formato;
+      const contenido = resultado.contenido_adaptado || {};
+      if (contenido.preguntas) return "Quiz";
+      if (contenido.pasos) return "Tutorial";
+      if (contenido.puntos_clave) return "TLDR";
+      if (contenido.escenas) return "Guion";
+      return "Flashcards";
+    }
+
+    function htmlMetadatos(resultado, formato) {
+      const metadatos = resultado.metadatos || {};
+      const evaluacion = resultado.evaluacion_calidad || {};
+      const almacenamiento = resultado.almacenamiento_oci || {};
+      const info = INFO_FORMATOS[formato] || { etiqueta: formato, icono: "article" };
+      const anclaje = Math.round(Math.min(1, Math.max(0, Number(evaluacion.anclaje_fuente_score) || 0)) * 100);
+      const claridad = evaluacion.claridad_pedagogica || "";
+      const conceptos = metadatos.conceptos_clave || [];
+
+      let html = `<div class="chips-meta">
+        <span class="chip">${icono(info.icono)} ${escaparHtml(info.etiqueta)}</span>
+        <span class="chip">${icono("person")} ${escaparHtml(metadatos.perfil_aplicado)}</span>
+        <span class="chip">${icono("schedule")} ~${escaparHtml(metadatos.tiempo_estimado_estudio_minutos)} min</span>`;
+      if (claridad) {
+        html += `<span class="chip nivel-${escaparHtml(claridad.toLowerCase())}">${icono("school")} Claridad ${escaparHtml(claridad.toLowerCase())}</span>`;
+      }
+      html += `<span class="chip" title="Que tan fiel es el contenido al documento original">
+          ${icono("verified")} Fidelidad ${anclaje}%
+          <span class="medidor" aria-hidden="true"><span style="width:${anclaje}%"></span></span>
+        </span>`;
+      if (almacenamiento.status_upload === "fallido") {
+        html += `<span class="chip nivel-baja">${icono("cloud_off")} No se guardo en la nube</span>`;
+      }
+      html += `</div>`;
+
+      if (evaluacion.observaciones) {
+        html += `<p class="nota-critico">${icono("rate_review")}<span>${formatearTexto(evaluacion.observaciones)}</span></p>`;
+      }
+      // En el quiz los conceptos son los enunciados: mostrarlos adelantaria las preguntas
+      if (formato !== "Quiz" && conceptos.length > 0) {
+        html += `<details class="conceptos">
+          <summary>Conceptos clave (${conceptos.length})</summary>
+          <div class="chips-meta">${conceptos.map((concepto) => `<span class="chip" title="${escaparHtml(concepto)}"><span class="chip-texto">${escaparHtml(concepto)}</span></span>`).join("")}</div>
+        </details>`;
+      }
+      return html;
+    }
+
+    function mostrarResultado(resultado) {
+      const contenedor = document.getElementById("resultado");
+      estadoQuiz = null;
+      if (!resultado) { contenedor.innerHTML = ""; return; }
+      const contenido = resultado.contenido_adaptado || {};
+      const formato = detectarFormato(resultado);
+      contenedor.innerHTML = `
+        <div class="tarjeta-resultado" data-formato="${escaparHtml(formato)}">
+          <h2>${formatearTexto(contenido.titulo)}</h2>
+          <p class="intro-resultado">${formatearTexto(contenido.introduccion_contextualizada)}</p>
+          ${htmlMetadatos(resultado, formato)}
+          <div class="cuerpo-formato" id="cuerpo-formato">${RENDERIZADORES[formato](contenido)}</div>
+        </div>`;
+      if (formato === "Quiz") iniciarQuiz(contenido.preguntas || []);
+    }
+
+    // ---------- Flashcards ----------
+
+    function renderFlashcards(contenido) {
+      const items = contenido.items || [];
+      if (items.length === 0) return `<p class="estado-vacio">No se generaron tarjetas para este documento.</p>`;
+      let html = `
+        <div class="barra-herramientas">
+          <span class="ayuda">${icono("touch_app")} Toca una tarjeta o pulsa Enter para ver la respuesta</span>
+          <button type="button" class="boton-secundario" data-accion="voltear-todas" aria-pressed="false">${icono("flip")} Voltear todas</button>
+        </div>
+        <div class="grid-flashcards">`;
+      items.forEach((item, indice) => {
+        html += `
+          <div class="flashcard-3d" role="button" tabindex="0" aria-pressed="false" data-accion="voltear"
+               aria-label="Tarjeta ${indice + 1} de ${items.length}">
+            <div class="flashcard-interior">
+              <div class="flashcard-cara flashcard-frente">
+                <span class="numero-tarjeta">${indice + 1} / ${items.length}</span>
+                <span>${formatearTexto(item.frente)}</span>
+                <span class="icono-voltear">${icono("360")}</span>
+              </div>
+              <div class="flashcard-cara flashcard-dorso">
+                <p>${formatearTexto(item.dorso)}</p>
+                ${item.pista_didactica ? `<p class="pista-tarjeta">${icono("lightbulb")}<span>${formatearTexto(item.pista_didactica)}</span></p>` : ""}
+              </div>
+            </div>
+          </div>`;
+      });
+      return html + `</div>`;
+    }
+
+    function voltearTarjeta(tarjeta, volteada) {
+      const estado = volteada ?? !tarjeta.classList.contains("volteada");
+      tarjeta.classList.toggle("volteada", estado);
+      tarjeta.setAttribute("aria-pressed", String(estado));
+    }
+
+    function voltearTodas(boton) {
+      const volteadas = boton.getAttribute("aria-pressed") !== "true";
+      boton.setAttribute("aria-pressed", String(volteadas));
+      document.querySelectorAll(".flashcard-3d").forEach((tarjeta) => voltearTarjeta(tarjeta, volteadas));
+    }
+
+    // ---------- Tutorial ----------
+
+    function htmlEjemplo(ejemplo) {
+      if (!ejemplo || !ejemplo.trim()) return "";
+      if (pareceCodigo(ejemplo)) {
+        return `<pre class="bloque-codigo"><code>${escaparHtml(limpiarBloqueCodigo(ejemplo))}</code></pre>`;
+      }
+      return `<div class="ejemplo-texto">${icono("lightbulb_circle")}<p>${formatearTexto(ejemplo)}</p></div>`;
+    }
+
+    function renderTutorial(contenido) {
+      const objetivos = contenido.objetivos || [];
+      const pasos = contenido.pasos || [];
+      let html = "";
+      if (objetivos.length > 0) {
+        html += `
+          <section class="bloque-objetivos">
+            <h3 class="titulo-seccion">${icono("flag")} Al terminar podras</h3>
+            <ul class="lista-iconos">${objetivos.map((objetivo) => `<li>${icono("check_circle")}<span>${formatearTexto(objetivo)}</span></li>`).join("")}</ul>
+          </section>`;
+      }
+      if (pasos.length === 0) return html + `<p class="estado-vacio">No se generaron pasos para este tutorial.</p>`;
+      html += `
+        <div class="progreso">
+          <div class="texto-progreso"><span id="texto-progreso-tutorial">0 de ${pasos.length} pasos completados</span><span id="porcentaje-tutorial">0%</span></div>
+          <div class="barra-progreso" role="progressbar" aria-valuemin="0" aria-valuemax="${pasos.length}" aria-valuenow="0" id="barra-tutorial"><span></span></div>
+        </div>
+        <ol class="lista-pasos">`;
+      pasos.forEach((paso, indice) => {
+        html += `
+          <li class="paso-tutorial">
+            <div class="numero-paso" aria-hidden="true">${indice + 1}</div>
+            <div class="cuerpo-paso">
+              <h3>${formatearTexto(paso.titulo)}</h3>
+              <p>${formatearTexto(paso.explicacion)}</p>
+              ${htmlEjemplo(paso.ejemplo)}
+              ${paso.consejo ? `<div class="consejo">${icono("tips_and_updates")}<p>${formatearTexto(paso.consejo)}</p></div>` : ""}
+              <label class="check-paso"><input type="checkbox" data-accion="completar-paso"> Marcar como completado</label>
+            </div>
+          </li>`;
+      });
+      html += `</ol>`;
+      if (contenido.conclusion) {
+        html += `<div class="bloque-cierre">${icono("emoji_events")}<div><strong>Para cerrar</strong>${formatearTexto(contenido.conclusion)}</div></div>`;
+      }
+      return html;
+    }
+
+    function actualizarProgresoTutorial() {
+      const casillas = [...document.querySelectorAll("[data-accion='completar-paso']")];
+      const completados = casillas.filter((casilla) => casilla.checked).length;
+      const porcentaje = casillas.length ? Math.round((completados / casillas.length) * 100) : 0;
+      casillas.forEach((casilla) => casilla.closest(".paso-tutorial").classList.toggle("completado", casilla.checked));
+      document.getElementById("texto-progreso-tutorial").textContent = `${completados} de ${casillas.length} pasos completados`;
+      document.getElementById("porcentaje-tutorial").textContent = `${porcentaje}%`;
+      const barra = document.getElementById("barra-tutorial");
+      barra.setAttribute("aria-valuenow", String(completados));
+      barra.querySelector("span").style.width = `${porcentaje}%`;
+    }
+
+    // ---------- Quiz ----------
+
+    function esVerdadero(texto) {
+      return String(texto).trim().toLowerCase() === "verdadero";
+    }
+
+    function esVerdaderoFalso(opciones) {
+      const normalizadas = opciones.map((opcion) => String(opcion).trim().toLowerCase());
+      return normalizadas.length === 2 && normalizadas.includes("verdadero") && normalizadas.includes("falso");
+    }
+
+    function prepararPreguntas(preguntas) {
+      return preguntas
+        .filter((pregunta) => Array.isArray(pregunta.opciones) && pregunta.opciones.length >= 2
+          && Number.isInteger(pregunta.indice_correcto)
+          && pregunta.indice_correcto >= 0 && pregunta.indice_correcto < pregunta.opciones.length)
+        .map((pregunta) => {
+          const verdaderoFalso = esVerdaderoFalso(pregunta.opciones);
+          const opciones = pregunta.opciones.map((texto, indice) => ({ texto, correcta: indice === pregunta.indice_correcto }));
+          return {
+            original: pregunta,
+            enunciado: pregunta.enunciado,
+            explicacion: pregunta.explicacion || "",
+            pista: pregunta.pista || "",
+            verdaderoFalso,
+            // Verdadero siempre primero; el resto se mezcla para que la correcta no quede siempre en la misma posicion
+            opciones: verdaderoFalso
+              ? opciones.sort((a, b) => Number(esVerdadero(b.texto)) - Number(esVerdadero(a.texto)))
+              : mezclar(opciones),
+          };
+        });
+    }
+
+    function iniciarQuiz(preguntas) {
+      estadoQuiz = {
+        preguntas: prepararPreguntas(preguntas),
+        indice: 0,
+        seleccion: null,
+        comprobada: false,
+        pistaVisible: false,
+        terminado: false,
+        respuestas: [],
+      };
+      renderizarQuiz();
+    }
+
+    function renderQuiz() {
+      return `<div id="zona-quiz"></div>`;
+    }
+
+    function htmlPreguntaQuiz() {
+      const { preguntas, indice, seleccion, comprobada, pistaVisible, respuestas } = estadoQuiz;
+      const pregunta = preguntas[indice];
+      const aciertos = respuestas.filter((respuesta) => respuesta.correcta).length;
+      const avance = Math.round(((indice + (comprobada ? 1 : 0)) / preguntas.length) * 100);
+      const esUltima = indice === preguntas.length - 1;
+
+      const opcionesHtml = pregunta.opciones.map((opcion, i) => {
+        let clase = "opcion-quiz";
+        let iconoEstado = "";
+        if (comprobada) {
+          if (opcion.correcta) { clase += " correcta"; iconoEstado = "check_circle"; }
+          else if (i === seleccion) { clase += " incorrecta"; iconoEstado = "cancel"; }
+          else { clase += " atenuada"; }
+        } else if (i === seleccion) {
+          clase += " seleccionada";
+        }
+        return `
+          <button type="button" class="${clase}" role="radio" aria-checked="${i === seleccion}" data-opcion="${i}" ${comprobada ? "disabled" : ""}>
+            <span class="letra-opcion">${pregunta.verdaderoFalso ? (i === 0 ? "V" : "F") : LETRAS[i]}</span>
+            <span class="texto-opcion">${formatearTexto(opcion.texto)}</span>
+            ${iconoEstado ? `<span class="material-symbols-rounded icono-estado" aria-hidden="true">${iconoEstado}</span>` : ""}
+          </button>`;
+      }).join("");
+
+      let retroalimentacion = "";
+      if (comprobada) {
+        const acierto = pregunta.opciones[seleccion].correcta;
+        const correcta = pregunta.opciones.find((opcion) => opcion.correcta);
+        retroalimentacion = `
+          <div class="retro-quiz ${acierto ? "acierto" : "fallo"}" role="status">
+            <span class="veredicto">${icono(acierto ? "celebration" : "error")} ${acierto ? "Correcto" : "Incorrecto"}</span>
+            ${acierto ? "" : `<p>La respuesta correcta es: <strong>${formatearTexto(correcta.texto)}</strong></p>`}
+            ${pregunta.explicacion ? `<p>${formatearTexto(pregunta.explicacion)}</p>` : ""}
+          </div>`;
+      }
+
+      const botonPista = pregunta.pista && !comprobada
+        ? `<button type="button" class="boton-secundario" data-accion="pista" aria-pressed="${pistaVisible}">${icono("lightbulb")} ${pistaVisible ? "Ocultar pista" : "Ver pista"}</button>`
+        : "";
+      const botonPrincipal = comprobada
+        ? `<button type="button" class="boton-primario" data-accion="siguiente" data-foco>${icono(esUltima ? "flag" : "arrow_forward")} ${esUltima ? "Ver resultado" : "Siguiente pregunta"}</button>`
+        : `<button type="button" class="boton-primario" data-accion="comprobar" ${seleccion === null ? "disabled" : ""}>${icono("check")} Comprobar</button>`;
+
+      return `
+        <div class="quiz-cabecera">
+          <span>Pregunta ${indice + 1} de ${preguntas.length}</span>
+          <span class="marcador">${icono("stars")} ${aciertos} ${aciertos === 1 ? "acierto" : "aciertos"}</span>
+        </div>
+        <div class="barra-progreso" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${avance}"><span style="width:${avance}%"></span></div>
+        <h3 class="enunciado-quiz" id="enunciado-quiz" tabindex="-1">${formatearTexto(pregunta.enunciado)}</h3>
+        <div class="opciones-quiz ${pregunta.verdaderoFalso ? "verdadero-falso" : ""}" role="radiogroup" aria-labelledby="enunciado-quiz">${opcionesHtml}</div>
+        ${pistaVisible && !comprobada ? `<p class="pista-quiz">${icono("lightbulb")}<span>${formatearTexto(pregunta.pista)}</span></p>` : ""}
+        ${retroalimentacion}
+        <div class="acciones-quiz">
+          ${botonPrincipal}
+          ${botonPista}
+          <span class="atajos">Atajos: <kbd>1</kbd>-<kbd>${pregunta.opciones.length}</kbd> para elegir, <kbd>Enter</kbd> para ${comprobada ? "continuar" : "comprobar"}</span>
+        </div>`;
+    }
+
+    function htmlResultadoQuiz() {
+      const { preguntas, respuestas } = estadoQuiz;
+      const aciertos = respuestas.filter((respuesta) => respuesta.correcta).length;
+      const fallos = respuestas.length - aciertos;
+      const porcentaje = Math.round((aciertos / preguntas.length) * 100);
+      let nivel = "media";
+      let titulo = "Vas por buen camino";
+      let mensaje = "Repasa las preguntas que fallaste y vuelve a intentarlo.";
+      if (porcentaje >= 90) { nivel = "alta"; titulo = "Dominas el tema"; mensaje = "Respondiste casi todo correctamente."; }
+      else if (porcentaje >= 70) { nivel = "alta"; titulo = "Buen resultado"; mensaje = "Tienes claras las ideas principales. Revisa los detalles que fallaste."; }
+      else if (porcentaje < 50) { nivel = "baja"; titulo = "Conviene repasar"; mensaje = "Lee las explicaciones de abajo y repasa solo los errores."; }
+
+      const revision = respuestas.map((respuesta, indice) => {
+        const elegida = respuesta.pregunta.opciones[respuesta.seleccion];
+        const correcta = respuesta.pregunta.opciones.find((opcion) => opcion.correcta);
+        return `
+          <li class="item-revision ${respuesta.correcta ? "acierto" : "fallo"}">
+            ${icono(respuesta.correcta ? "check_circle" : "cancel")}
+            <div>
+              <h4>${indice + 1}. ${formatearTexto(respuesta.pregunta.enunciado)}</h4>
+              <p>Tu respuesta: <strong>${formatearTexto(elegida.texto)}</strong></p>
+              ${respuesta.correcta ? "" : `<p>Correcta: <strong>${formatearTexto(correcta.texto)}</strong></p>`}
+              ${respuesta.pregunta.explicacion ? `<p class="explicacion-revision">${formatearTexto(respuesta.pregunta.explicacion)}</p>` : ""}
+            </div>
+          </li>`;
+      }).join("");
+
+      return `
+        <div class="resultado-quiz">
+          <div class="puntaje-quiz nivel-${nivel}">
+            <span class="cifra">${aciertos}/${preguntas.length}</span>
+            <span class="porcentaje">${porcentaje}%</span>
+          </div>
+          <div class="mensaje-quiz">
+            <h3 tabindex="-1" data-foco>${titulo}</h3>
+            <p>${mensaje}</p>
+            <div class="acciones-quiz">
+              ${fallos > 0 ? `<button type="button" class="boton-primario" data-accion="repasar">${icono("replay")} Repasar ${fallos} ${fallos === 1 ? "error" : "errores"}</button>` : ""}
+              <button type="button" class="${fallos > 0 ? "boton-secundario" : "boton-primario"}" data-accion="reintentar">${icono("restart_alt")} Reintentar todo</button>
+            </div>
+          </div>
+        </div>
+        <ol class="revision-quiz" aria-label="Revision de respuestas">${revision}</ol>`;
+    }
+
+    function renderizarQuiz() {
+      const zona = document.getElementById("zona-quiz");
+      if (!zona || !estadoQuiz) return;
+      if (estadoQuiz.preguntas.length === 0) {
+        zona.innerHTML = `<p class="estado-vacio">No se generaron preguntas validas. Prueba a generar el quiz de nuevo.</p>`;
+      } else if (estadoQuiz.terminado) {
+        zona.innerHTML = htmlResultadoQuiz();
+      } else {
+        zona.innerHTML = htmlPreguntaQuiz();
+      }
+      ajustarAltura();
+    }
+
+    function enfocarQuiz(selector) {
+      const elemento = document.querySelector(`#zona-quiz ${selector}`);
+      if (elemento) elemento.focus({ preventScroll: true });
+      const zona = document.getElementById("zona-quiz");
+      if (zona) zona.scrollIntoView({ block: "nearest" });
+    }
+
+    function seleccionarOpcion(indice) {
+      if (!estadoQuiz || estadoQuiz.comprobada || estadoQuiz.terminado) return;
+      estadoQuiz.seleccion = indice;
+      renderizarQuiz();
+      enfocarQuiz(`[data-opcion="${indice}"]`);
+    }
+
+    function comprobarRespuesta() {
+      if (!estadoQuiz || estadoQuiz.comprobada || estadoQuiz.seleccion === null) return;
+      const pregunta = estadoQuiz.preguntas[estadoQuiz.indice];
+      estadoQuiz.comprobada = true;
+      estadoQuiz.respuestas.push({
+        pregunta,
+        seleccion: estadoQuiz.seleccion,
+        correcta: pregunta.opciones[estadoQuiz.seleccion].correcta,
+      });
+      renderizarQuiz();
+      enfocarQuiz("[data-foco]");
+    }
+
+    function siguientePregunta() {
+      if (!estadoQuiz || !estadoQuiz.comprobada) return;
+      if (estadoQuiz.indice + 1 >= estadoQuiz.preguntas.length) {
+        estadoQuiz.terminado = true;
+      } else {
+        estadoQuiz.indice += 1;
+        estadoQuiz.seleccion = null;
+        estadoQuiz.comprobada = false;
+        estadoQuiz.pistaVisible = false;
+      }
+      renderizarQuiz();
+      enfocarQuiz(estadoQuiz.terminado ? "[data-foco]" : "#enunciado-quiz");
+    }
+
+    function manejarAccionQuiz(accion) {
+      if (!estadoQuiz) return;
+      if (accion === "comprobar") comprobarRespuesta();
+      if (accion === "siguiente") siguientePregunta();
+      if (accion === "pista") {
+        estadoQuiz.pistaVisible = !estadoQuiz.pistaVisible;
+        renderizarQuiz();
+        enfocarQuiz("[data-accion='pista']");
+      }
+      if (accion === "reintentar") {
+        iniciarQuiz(estadoQuiz.preguntas.map((pregunta) => pregunta.original));
+        enfocarQuiz("#enunciado-quiz");
+      }
+      if (accion === "repasar") {
+        const falladas = estadoQuiz.respuestas.filter((respuesta) => !respuesta.correcta).map((respuesta) => respuesta.pregunta.original);
+        iniciarQuiz(falladas);
+        enfocarQuiz("#enunciado-quiz");
+      }
+    }
+
+    // ---------- TL;DR ----------
+
+    function renderTLDR(contenido) {
+      const puntos = contenido.puntos_clave || [];
+      const acciones = contenido.acciones_recomendadas || [];
+      let html = "";
+      if (contenido.resumen_una_linea) {
+        html += `<div class="resumen-destacado">${icono("bolt")}<p>${formatearTexto(contenido.resumen_una_linea)}</p></div>`;
+      }
+      if (puntos.length > 0) {
+        html += `<div class="grid-puntos">${puntos.map((punto) => `
+          <article class="punto-clave">
+            <h3>${formatearTexto(punto.titulo)}</h3>
+            <p>${formatearTexto(punto.detalle)}</p>
+          </article>`).join("")}</div>`;
+      }
+      if (acciones.length > 0) {
+        html += `
+          <section class="bloque-acciones">
+            <h3 class="titulo-seccion">${icono("checklist")} Que hacer ahora</h3>
+            <ul class="lista-iconos">${acciones.map((accion) => `<li>${icono("task_alt")}<span>${formatearTexto(accion)}</span></li>`).join("")}</ul>
+          </section>`;
+      }
+      return html || `<p class="estado-vacio">No se genero el resumen para este documento.</p>`;
+    }
+
+    // ---------- Guion ----------
+
+    function renderGuion(contenido) {
+      const escenas = contenido.escenas || [];
+      if (escenas.length === 0) return `<p class="estado-vacio">No se generaron escenas para este guion.</p>`;
+      const total = escenas.reduce((suma, escena) => suma + (Number(escena.duracion_segundos) || 0), 0);
+      let inicio = 0;
+      let html = `
+        <div class="barra-herramientas">
+          <span class="ayuda">${icono("timer")} Duracion total ${formatearDuracion(total)} en ${escenas.length} escenas</span>
+          <button type="button" class="boton-secundario" data-accion="modo-narracion" aria-pressed="false">${icono("record_voice_over")} Solo narracion</button>
+        </div>
+        <ol class="linea-tiempo" id="linea-tiempo">`;
+      escenas.forEach((escena, indice) => {
+        const fin = inicio + (Number(escena.duracion_segundos) || 0);
+        html += `
+          <li class="escena">
+            <div class="cabecera-escena">
+              <span class="marca-tiempo">${icono("schedule")} ${formatearDuracion(inicio)} a ${formatearDuracion(fin)}</span>
+              <h3>Escena ${indice + 1}: ${formatearTexto(escena.titulo)}</h3>
+            </div>
+            <div class="columnas-escena">
+              <div class="narracion">${icono("mic")}<p>${formatearTexto(escena.narracion)}</p></div>
+              <div class="apoyo-visual">${icono("videocam")}<p>${formatearTexto(escena.apoyo_visual)}</p></div>
+            </div>
+          </li>`;
+        inicio = fin;
+      });
+      html += `</ol>`;
+      if (contenido.cierre) {
+        html += `<div class="bloque-cierre">${icono("campaign")}<div><strong>Cierre</strong>${formatearTexto(contenido.cierre)}</div></div>`;
+      }
+      return html;
+    }
+
+    function alternarModoNarracion(boton) {
+      const activo = boton.getAttribute("aria-pressed") !== "true";
+      boton.setAttribute("aria-pressed", String(activo));
+      document.getElementById("linea-tiempo").classList.toggle("modo-narracion", activo);
+      ajustarAltura();
+    }
+
+    const RENDERIZADORES = {
+      Flashcards: renderFlashcards,
+      Tutorial: renderTutorial,
+      Quiz: renderQuiz,
+      TLDR: renderTLDR,
+      Guion: renderGuion,
+    };
+
+    // ---------- Eventos del resultado (delegados) ----------
+
+    const contenedorResultado = document.getElementById("resultado");
+
+    contenedorResultado.addEventListener("click", (evento) => {
+      const opcion = evento.target.closest("[data-opcion]");
+      if (opcion) { seleccionarOpcion(Number(opcion.dataset.opcion)); return; }
+      const objetivo = evento.target.closest("[data-accion]");
+      if (!objetivo) return;
+      const accion = objetivo.dataset.accion;
+      if (accion === "voltear") voltearTarjeta(objetivo);
+      else if (accion === "voltear-todas") voltearTodas(objetivo);
+      else if (accion === "modo-narracion") alternarModoNarracion(objetivo);
+      else if (accion !== "completar-paso") manejarAccionQuiz(accion);
+    });
+
+    contenedorResultado.addEventListener("change", (evento) => {
+      if (evento.target.matches("[data-accion='completar-paso']")) actualizarProgresoTutorial();
+    });
+
+    document.addEventListener("keydown", (evento) => {
+      const tarjeta = evento.target.closest && evento.target.closest(".flashcard-3d");
+      if (tarjeta && (evento.key === "Enter" || evento.key === " ")) {
+        evento.preventDefault();
+        voltearTarjeta(tarjeta);
+        return;
+      }
+      if (!estadoQuiz || estadoQuiz.terminado || !document.getElementById("zona-quiz")) return;
+      if (evento.ctrlKey || evento.metaKey || evento.altKey) return;
+      if (["SELECT", "INPUT", "TEXTAREA"].includes(evento.target.tagName)) return;
+      const pregunta = estadoQuiz.preguntas[estadoQuiz.indice];
+      if (!pregunta) return;
+      const numero = Number.parseInt(evento.key, 10);
+      if (numero >= 1 && numero <= pregunta.opciones.length) {
+        evento.preventDefault();
+        seleccionarOpcion(numero - 1);
+        return;
+      }
+      if (evento.key === "Enter") {
+        // Enter sobre un boton ya dispara su propio click
+        if (evento.target.tagName === "BUTTON" && !evento.target.dataset.opcion) return;
+        evento.preventDefault();
+        if (estadoQuiz.comprobada) siguientePregunta();
+        else comprobarRespuesta();
+      }
+    });
+
+    // ---------- Render desde Streamlit ----------
+
     window.addEventListener("message", (evento) => {
-      if (evento.data.type !== "streamlit:render") return;
-      const { opciones, resultado } = evento.data.args;
+      if (!evento.data || evento.data.type !== "streamlit:render") return;
+      const { opciones, resultado, error } = evento.data.args;
       llenarSelect("perfil", opciones.perfiles);
-      llenarSelect("formato", opciones.formatos);
+      llenarSelectorFormato(opciones.formatos);
       llenarSelect("nicho", opciones.nichos);
       llenarSelect("nivel", opciones.niveles);
-      mostrarResultado(resultado);
+
+      if (error && error.id !== ultimoIdError) {
+        ultimoIdError = error.id;
+        if (error.id === idSolicitudPendiente) {
+          idSolicitudPendiente = null;
+          ponerCargando(false);
+          ultimaClaveResultado = null;
+        }
+        mostrarAviso("No se pudo generar el contenido", error.mensaje);
+      }
+
+      if (resultado && resultado.id_solicitud === idSolicitudPendiente) {
+        idSolicitudPendiente = null;
+        ponerCargando(false);
+      }
+
+      // Solo se redibuja si llega un resultado nuevo: asi no se pierde el avance del quiz ni las tarjetas volteadas
+      const clave = resultado ? JSON.stringify(resultado) : null;
+      if (idSolicitudPendiente === null && clave !== ultimaClaveResultado) {
+        ultimaClaveResultado = clave;
+        mostrarResultado(resultado);
+      }
       ajustarAltura();
     });
+
+    // ---------- Carga de archivo ----------
 
     const zonaDrop = document.getElementById("zona-drop");
     const inputArchivo = document.getElementById("archivo");
 
+    function extensionValida(archivo) {
+      return EXTENSIONES_VALIDAS.includes(archivo.name.toLowerCase().split(".").pop());
+    }
+
     function actualizarNombreArchivo() {
       const archivo = inputArchivo.files[0];
-      document.getElementById("nombre-archivo").textContent = archivo
-        ? archivo.name
-        : "Arrastra tu PDF, MD o TXT aqui, o haz clic";
+      zonaDrop.classList.toggle("con-archivo", Boolean(archivo));
+      document.getElementById("icono-archivo").textContent = archivo ? "task" : "description";
+      document.getElementById("nombre-archivo").textContent = archivo ? archivo.name : TEXTO_ZONA_DROP;
+      if (archivo) ocultarAviso();
     }
 
     zonaDrop.addEventListener("click", () => inputArchivo.click());
+    zonaDrop.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputArchivo.click(); }
+    });
     zonaDrop.addEventListener("dragover", (e) => { e.preventDefault(); zonaDrop.classList.add("sobre-zona"); });
     zonaDrop.addEventListener("dragleave", () => zonaDrop.classList.remove("sobre-zona"));
     zonaDrop.addEventListener("drop", (e) => {
       e.preventDefault();
       zonaDrop.classList.remove("sobre-zona");
+      const archivo = e.dataTransfer.files[0];
+      if (!archivo) return;
+      if (!extensionValida(archivo)) {
+        mostrarAviso("Formato no soportado", `"${archivo.name}" no es PDF, MD ni TXT.`);
+        return;
+      }
       inputArchivo.files = e.dataTransfer.files;
       actualizarNombreArchivo();
     });
@@ -225,22 +1219,32 @@
 
     document.getElementById("btn-generar").addEventListener("click", () => {
       const archivo = inputArchivo.files[0];
-      if (!archivo) { alert("Selecciona un documento"); return; }
+      if (!archivo) { mostrarAviso("Falta el documento", "Sube un PDF, MD o TXT para generar el contenido."); return; }
+      if (!extensionValida(archivo)) { mostrarAviso("Formato no soportado", `"${archivo.name}" no es PDF, MD ni TXT.`); return; }
+      const formato = formatoSeleccionado();
+      if (!formato) { mostrarAviso("Falta el formato", "Elige que tipo de contenido quieres generar."); return; }
+      ocultarAviso();
       const lector = new FileReader();
+      lector.onerror = () => mostrarAviso("No se pudo leer el archivo", "Vuelve a seleccionarlo e intenta de nuevo.");
       lector.onload = () => {
+        const id = Date.now();
+        idSolicitudPendiente = id;
+        ponerCargando(true);
+        mostrarCargando(formato);
         enviarAStreamlit("streamlit:setComponentValue", {
           value: {
             accion: "generar",
-            id: Date.now(),
+            id,
             archivo_nombre: archivo.name,
             archivo_base64: lector.result.split(",")[1],
             perfil: document.getElementById("perfil").value,
-            formato: document.getElementById("formato").value,
+            formato,
             nicho: document.getElementById("nicho").value,
             nivel: document.getElementById("nivel").value,
           },
           dataType: "json",
         });
+        ajustarAltura();
       };
       lector.readAsDataURL(archivo);
     });
@@ -251,6 +1255,9 @@
       document.documentElement.style.setProperty("--mouse-x", x);
       document.documentElement.style.setProperty("--mouse-y", y);
     });
+
+    // El alto del iframe sigue al contenido (tarjetas volteadas, pasos del quiz, fuentes que cargan tarde)
+    new ResizeObserver(ajustarAltura).observe(document.body);
 
     enviarAStreamlit("streamlit:componentReady", { apiVersion: 1 });
     ajustarAltura();
