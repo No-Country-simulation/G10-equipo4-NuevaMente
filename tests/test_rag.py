@@ -33,7 +33,7 @@ def test_recuperar_devuelve_chunks():
         cliente_falso.get_or_create_collection.return_value = coleccion_falsa
         resultados = recuperar("doc1", "consulta", k=2)
 
-    assert resultados == [
-        Chunk(texto="fragmento uno", fuente="doc1"),
-        Chunk(texto="fragmento dos", fuente="doc1"),
+        assert resultados == [
+        Chunk(texto="fragmento uno", fuente="doc1 · fragmento 1 de 2"),
+        Chunk(texto="fragmento dos", fuente="doc1 · fragmento 2 de 2"),
     ]

@@ -10,7 +10,7 @@ Proyecto para el **Hackathon ONE Grupo 10** (Oracle Next Education & Alura). Des
 2. **RAG**: el texto se divide en chunks y se indexa en ChromaDB (persistente). Se recuperan los chunks más relevantes según el formato/perfil solicitado.
 3. **Agentes (LangGraph)**: un grafo de 3 nodos — Investigador → Redactor → Crítico — genera el contenido adaptado. El Crítico evalúa fidelidad a la fuente (`anclaje_fuente_score`) y si es baja, reintenta (máximo 2 veces).
 4. **Almacenamiento**: el resultado se guarda en OCI Object Storage (con fallback a autenticación por instancia si corre en OCI).
-5. **UI**: componente custom de Streamlit (HTML/CSS/JS propio, sin React/npm) con diseño Neo-Brutalista, incluyendo flashcards con flip 3D.
+5. **UI**: componente custom de Streamlit (HTML/CSS/JS propio, sin React/npm) con diseño Neo-Brutalista, organizado en dos pestañas — **Crear contenido** (formulario de subida) y **Estudiar** (resultado generado) — e incluyendo flashcards con flip 3D. La app cambia de pestaña sola: salta a "Estudiar" al generar y vuelve a "Crear contenido" si algo falla.
 
 ## Stack tecnológico
 
@@ -29,7 +29,7 @@ G10-equipo4-NuevaMente
 │  ├─ componente.py       # Declaracion del componente custom de Streamlit
 │  ├─ demo.py             # Modo demo: UI completa sin LLM ni OCI
 │  ├─ frontend
-│  │  └─ index.html       # UI Neo-Brutalista (HTML/CSS/JS)
+│  │  └─ index.html       # UI Neo-Brutalista (HTML/CSS/JS), con pestañas Crear/Estudiar
 │  └─ main.py             # Entry point de Streamlit
 ├─ ejemplos
 ├─ nuevamente
@@ -69,6 +69,8 @@ Cada formato tiene su propio modelo Pydantic (`MODELOS_POR_FORMATO` en `contrato
 
 `PreguntaQuiz` valida que `indice_correcto` exista entre las opciones y que no haya opciones repetidas; si el LLM devuelve una pregunta invalida, el reintento de `with_retry` la vuelve a pedir.
 
+Ademas del contenido, cada respuesta trae metadatos de aprendizaje (`Metadatos` en `contratos.py`): tiempo estimado de estudio, conceptos clave y **prerrequisitos** (que deberia saber el lector antes de empezar, segun su perfil y nivel de detalle elegido).
+
 ## Como correr el proyecto localmente
 
 ### 1. Entorno virtual
@@ -93,7 +95,7 @@ OLLAMA_BASE_URL=               # solo si LLM_PROVEEDOR=ollama
 OLLAMA_MODEL=qwen2.5:7b        # solo si LLM_PROVEEDOR=ollama
 ```
 
-**Nota sobre proveedores**: Gemini puede devolver errores 503 por saturacion en el tier gratuito. Como alternativa, el proyecto soporta correr un modelo local (`qwen2.5:7b`) via Ollama en Google Colab con GPU, expuesto con un tunel de ngrok (ver `ollama_colab_nuevamente.ipynb`). Cambiando `LLM_PROVEEDOR=ollama` en el `.env` se usa esa alternativa sin tocar codigo.
+**Nota sobre proveedores**: Gemini puede devolver errores 503 por saturacion en el tier gratuito. Como alternativa, el proyecto soporta correr un modelo local (`qwen2.5:7b`) via Ollama en Google Colab con GPU, expuesto con un tunel de ngrok (ver `ollama_colab_nuevamente.ipynb`). Cambiando `LLM_PROVEEDOR=ollama` en el `.env` se usa esa alternativa sin tocar codigo. Si Ollama falla durante una generacion, el sistema reintenta automaticamente con Gemini antes de fallar.
 
 ### 3. Correr la app
 
@@ -115,7 +117,9 @@ Usa el mismo componente y la misma lectura de archivos que `main.py`, pero respo
 pytest
 ```
 
-## Estado actual (Sprint 1)
+## Estado actual
+
+### Sprint 1: Esqueleto (cerrado)
 
 - [x] Contratos de datos (Pydantic)
 - [x] Ingesta de documentos (PDF/MD/TXT)
@@ -124,9 +128,19 @@ pytest
 - [x] Almacenamiento en OCI
 - [x] UI custom con diseno Neo-Brutalista
 - [x] Integracion end-to-end verificada (PDF real -> flashcards generadas)
-- [ ] CI en GitHub Actions
+- [x] CI en GitHub Actions
 - [x] Manejo de errores en UI (aviso en el formulario y boton con estado de carga)
 - [x] Contrato y vista propia para cada formato de salida
+
+### Sprint 2: Inteligencia (en curso)
+
+- [x] Pestañas "Crear contenido" y "Estudiar" en la app
+- [x] Metadatos de aprendizaje completos (tiempo estimado, conceptos clave, prerrequisitos)
+- [x] Mensajes de error claros ante archivo vacio o formato no soportado
+- [ ] Mejorar la busqueda de fragmentos relevantes del RAG (diversidad + fuente de cada chunk)
+- [ ] Verificar/afinar el grafo de 3 agentes y los prompts por perfil y formato
+- [ ] Probar los 3 documentos de prueba en varios perfiles y formatos
+- [ ] Primer despliegue de prueba en una VM de OCI
 
 ## Flujo de trabajo
 

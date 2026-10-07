@@ -31,6 +31,7 @@ class Metadatos(BaseModel):
     formato_generado: str
     tiempo_estimado_estudio_minutos: int
     conceptos_clave: list[str]
+    prerrequisitos: list[str]
 
 
 class ItemFlashcard(BaseModel):
@@ -145,6 +146,7 @@ class Respuesta(BaseModel):
     contenido_adaptado: Contenido
     evaluacion_calidad: EvaluacionCalidad
     almacenamiento_oci: AlmacenamientoOCI
+    fuentes: list[Chunk] = Field(default_factory=list)
 
 
 def _generar_doc_id(titulo: str) -> str:
@@ -165,18 +167,43 @@ def _resumir_contenido(contenido: Contenido) -> tuple[int, list[str]]:
     return max(1, len(contenido.items) * 2), [item.frente for item in contenido.items]
 
 
-def procesar(solicitud: Solicitud) -> Respuesta:
+_PRERREQUISITOS_POR_PERFIL: dict[str, list[str]] = {
+    "Principiante": ["Ninguno: el contenido se explica desde cero"],
+    "Junior": ["Conceptos basicos de programacion y uso de terminal"],
+    "Lider Tecnico": ["Experiencia previa disenando o manteniendo arquitecturas de software"],
+    "Ejecutivo": ["Ninguno tecnico: se explica en terminos de negocio"],
+}
+
+
+def _prerrequisitos(solicitud: Solicitud) -> list[str]:
+    prerrequisitos = list(_PRERREQUISITOS_POR_PERFIL.get(solicitud.perfil_destinatario, []))
+    if solicitud.nivel_detalle == "Profundo" and solicitud.perfil_destinatario != "Ejecutivo":
+        if solicitud.nicho_sector != "General":
+            prerrequisitos.append(f"Familiaridad con el sector {solicitud.nicho_sector}")
+        else:
+            prerrequisitos.append("Familiaridad general con el tema del documento")
+    return prerrequisitos
+
+
+def procesar(solicitud: Solicitud, usar_cache: bool = True) -> Respuesta:
+    from nuevamente import cache
     from nuevamente.agentes import generar
     from nuevamente.almacenamiento import guardar
     from nuevamente.rag import indexar, recuperar
 
     doc_id = _generar_doc_id(solicitud.documento_titulo)
-    indexar(doc_id, solicitud.documento_contenido)
 
-    consulta = f"Puntos clave para un {solicitud.formato_salida} de nivel {solicitud.nivel_detalle}"
-    chunks = recuperar(doc_id, consulta, k=5)
+    en_cache = cache.obtener(solicitud) if usar_cache else None
+    if en_cache is not None:
+        contenido, evaluacion, fuentes = en_cache
+    else:
+        indexar(doc_id, solicitud.documento_contenido)
+        consulta = f"Puntos clave para un {solicitud.formato_salida} de nivel {solicitud.nivel_detalle}"
+        chunks = recuperar(doc_id, consulta, k=5)
+        contenido, evaluacion = generar(solicitud, chunks)
+        fuentes = chunks
+        cache.guardar(solicitud, contenido, evaluacion, fuentes)
 
-    contenido, evaluacion = generar(solicitud, chunks)
     tiempo_estimado, conceptos_clave = _resumir_contenido(contenido)
 
     clave = f"{doc_id}-{solicitud.perfil_destinatario}-{solicitud.formato_salida}.json".lower()
@@ -193,6 +220,7 @@ def procesar(solicitud: Solicitud) -> Respuesta:
             formato_generado=solicitud.formato_salida,
             tiempo_estimado_estudio_minutos=tiempo_estimado,
             conceptos_clave=conceptos_clave,
+            prerrequisitos=_prerrequisitos(solicitud),
         ),
         contenido_adaptado=contenido,
         evaluacion_calidad=evaluacion,
@@ -201,6 +229,7 @@ def procesar(solicitud: Solicitud) -> Respuesta:
             objeto_id=clave,
             status_upload=status_upload,
         ),
+        fuentes=fuentes,
     )
 
 

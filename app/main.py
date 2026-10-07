@@ -8,11 +8,13 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 import base64
+import logging
 
 import streamlit as st
 from componente import render_ui
 
 from nuevamente.contratos import Solicitud, procesar
+from nuevamente.errores import describir_error
 from nuevamente.ingesta import leer_documento
 
 st.set_page_config(layout="wide")
@@ -69,10 +71,10 @@ if valor and valor.get("accion") == "generar" and valor.get("id") != st.session_
             nivel_detalle=valor["nivel"],
         )
         with st.spinner("Generando contenido..."):
-            respuesta = procesar(solicitud)
+            respuesta = procesar(solicitud, usar_cache=not valor.get("regenerar", False))
         st.session_state.resultado = {**respuesta.model_dump(), "id_solicitud": valor["id"]}
         st.session_state.error = None
-    except Exception as exc:  # noqa: BLE001
-        st.session_state.error = {"mensaje": str(exc), "id": valor["id"]}
+    except Exception as exc:
+        logging.getLogger(__name__).exception("Fallo al generar contenido")
+        st.session_state.error = {**describir_error(exc), "id": valor["id"]}
     st.rerun()
-
