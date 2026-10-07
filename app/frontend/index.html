@@ -69,6 +69,23 @@
 
   .contenedor-principal { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
 
+  /* ---------- Pestañas ---------- */
+
+  .pestañas { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .pestaña {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 20px; border: 3px solid var(--color-contorno); border-radius: 9999px;
+    background: #FFFFFF; color: var(--color-on-superficie); font-weight: 800;
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .pestaña:hover { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
+  .pestaña[aria-selected="true"] {
+    background: var(--color-primario); color: var(--color-on-primario);
+    box-shadow: var(--sombra-sm); transform: translate(-2px, -2px);
+  }
+
+  [role="tabpanel"][hidden] { display: none; }
+
   /* ---------- Formulario ---------- */
 
   .tarjeta-formulario {
@@ -172,9 +189,47 @@
   .tarjeta-resultado > h2 { font-size: 1.7rem; word-break: break-word; }
   .intro-resultado { color: var(--color-on-superficie-variante); font-weight: 500; margin-top: 8px; max-width: 72ch; }
 
-  .tarjeta-cargando { display: flex; align-items: center; gap: 16px; }
-  .tarjeta-cargando .material-symbols-rounded { font-size: 36px; color: var(--color-primario); animation: girar 1.2s linear infinite; }
+  .tarjeta-cargando { display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
   .tarjeta-cargando p { color: var(--color-on-superficie-variante); font-weight: 500; }
+  .tarjeta-cargando .nota-tiempo { font-size: 0.85rem; }
+
+  /* Animacion de carga: los tres agentes se iluminan en orden (el avance es visual, no un porcentaje real) */
+  .animacion-agentes { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .agente-paso {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 96px; padding: 12px 14px;
+    border: 3px solid var(--color-contorno); border-radius: 12px; background: #FFFFFF; opacity: 0.55;
+    font-weight: 800; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.4px;
+    transition: opacity 0.3s, background 0.3s, box-shadow 0.3s;
+  }
+  .agente-paso .material-symbols-rounded { font-size: 28px; }
+  .agente-paso.activo { opacity: 1; background: var(--color-acento); box-shadow: var(--sombra-sm); animation: saltito 1s ease-in-out infinite; }
+  .agente-paso.hecho { opacity: 1; background: var(--color-exito); color: var(--color-on-exito); }
+  .conector-agentes { width: 28px; border-top: 3px dashed var(--color-contorno); }
+  .barra-carga { width: 100%; height: 14px; border: 3px solid var(--color-contorno); border-radius: 9999px; overflow: hidden; background: #FFFFFF; }
+  .barra-carga span { display: block; width: 40%; height: 100%; background: var(--color-primario); animation: deslizar 1.4s ease-in-out infinite; }
+  @keyframes saltito { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes deslizar { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .agente-paso.activo, .barra-carga span { animation: none; }
+  }
+
+  .aviso details { margin-top: 8px; font-size: 0.8rem; }
+  .aviso summary { cursor: pointer; font-weight: 700; width: fit-content; }
+  .aviso details p { font-family: monospace; font-weight: 500; }
+
+  .fuentes { margin-top: 24px; }
+  .fuentes summary { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-primario); }
+  .lista-fuentes { margin-top: 12px; padding-left: 20px; display: grid; gap: 12px; }
+  .etiqueta-fuente {
+    display: inline-block; padding: 2px 10px; border: 2px solid var(--color-contorno); border-radius: 9999px;
+    background: var(--color-primario-container); font-size: 0.78rem; font-weight: 700;
+  }
+  .lista-fuentes blockquote {
+    margin-top: 6px; padding: 8px 12px; border-left: 4px solid var(--color-contorno);
+    font-size: 0.85rem; color: var(--color-on-superficie-variante); word-break: break-word;
+  }
+  .barra-regenerar { margin-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .barra-regenerar .ayuda { font-size: 0.8rem; font-weight: 500; color: var(--color-on-superficie-variante); }
 
   .chips-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
   .chip {
@@ -204,6 +259,14 @@
   .cuerpo-formato { margin-top: 24px; padding-top: 24px; border-top: 3px solid var(--color-contorno); }
 
   .barra-herramientas { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+
+  .barra-exportar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px;
+    padding-top: 16px; border-top: 3px dashed var(--color-contorno);
+  }
+  .barra-exportar .ayuda { font-weight: 700; }
+
+  .zona-impresion { display: none; }
   .ayuda { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; color: var(--color-on-superficie-variante); }
   .ayuda .material-symbols-rounded { font-size: 20px; }
 
@@ -440,11 +503,29 @@
     .resultado-quiz { grid-template-columns: 1fr; justify-items: center; text-align: center; }
     .resumen-destacado { font-size: 1.1rem; padding: 16px; }
     .atajos { display: none; }
+    .pestaña { flex: 1; justify-content: center; padding: 10px 14px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; }
     .blob { translate: none; }
+  }
+
+  @media print {
+    body * { visibility: hidden; }
+    .zona-impresion, .zona-impresion * { visibility: visible; }
+    .zona-impresion {
+      display: block; position: absolute; inset: 0; padding: 24px;
+      font-family: 'Montserrat', sans-serif; color: #111827;
+    }
+    .zona-impresion h1 { font-size: 1.6rem; margin-bottom: 10px; }
+    .zona-impresion h3 { font-size: 1.05rem; margin: 18px 0 6px; }
+    .zona-impresion .item-impresion { margin-bottom: 16px; page-break-inside: avoid; }
+    .zona-impresion pre {
+      white-space: pre-wrap; background: #f1f1f1; padding: 8px 10px;
+      border-radius: 6px; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.85rem;
+    }
+    .zona-impresion ul { margin: 4px 0 0 20px; padding: 0; }
   }
 </style>
 </head>
@@ -455,38 +536,59 @@
   </div>
 
   <div class="contenedor-principal">
-    <div class="tarjeta-formulario">
-      <h2 class="titulo-form"><span class="material-symbols-rounded">upload_file</span> Sube tu documento tecnico</h2>
-
-      <div class="zona-drop" id="zona-drop" role="button" tabindex="0" aria-describedby="nombre-archivo">
-        <span class="material-symbols-rounded" id="icono-archivo">description</span>
-        <p id="nombre-archivo">Arrastra tu PDF, MD o TXT aqui, o haz clic</p>
-        <input type="file" id="archivo" accept=".pdf,.md,.txt" hidden>
-      </div>
-
-      <fieldset class="bloque-formato">
-        <legend class="etiqueta-campo">Formato</legend>
-        <div class="selector-formato" id="formato"></div>
-      </fieldset>
-
-      <div class="fila-selects">
-        <div><label class="etiqueta-campo" for="perfil">Perfil</label><select id="perfil"></select></div>
-        <div><label class="etiqueta-campo" for="nicho">Nicho</label><select id="nicho"></select></div>
-        <div><label class="etiqueta-campo" for="nivel">Nivel</label><select id="nivel"></select></div>
-      </div>
-
-      <div class="aviso" id="aviso" role="alert" hidden>
-        <span class="material-symbols-rounded">error</span>
-        <div><strong id="aviso-titulo"></strong><p id="aviso-mensaje"></p></div>
-      </div>
-
-      <button id="btn-generar" class="boton-primario" type="button">
-        <span class="material-symbols-rounded">auto_awesome</span> <span id="texto-generar">Generar</span>
+    <div class="pestañas" role="tablist" aria-label="Secciones de NuevaMente">
+      <button type="button" class="pestaña" role="tab" id="tab-crear" aria-selected="true" aria-controls="panel-crear">
+        <span class="material-symbols-rounded" aria-hidden="true">edit_note</span> Crear contenido
+      </button>
+      <button type="button" class="pestaña" role="tab" id="tab-estudiar" aria-selected="false" aria-controls="panel-estudiar" tabindex="-1">
+        <span class="material-symbols-rounded" aria-hidden="true">school</span> Estudiar
       </button>
     </div>
 
-    <div id="resultado" aria-live="polite"></div>
+    <div id="panel-crear" role="tabpanel" aria-labelledby="tab-crear">
+      <div class="tarjeta-formulario">
+        <h2 class="titulo-form"><span class="material-symbols-rounded">upload_file</span> Sube tu documento tecnico</h2>
+
+        <div class="zona-drop" id="zona-drop" role="button" tabindex="0" aria-describedby="nombre-archivo">
+          <span class="material-symbols-rounded" id="icono-archivo">description</span>
+          <p id="nombre-archivo">Arrastra tu PDF, MD o TXT aqui, o haz clic</p>
+          <input type="file" id="archivo" accept=".pdf,.md,.txt" hidden>
+        </div>
+
+        <fieldset class="bloque-formato">
+          <legend class="etiqueta-campo">Formato</legend>
+          <div class="selector-formato" id="formato"></div>
+        </fieldset>
+
+        <div class="fila-selects">
+          <div><label class="etiqueta-campo" for="perfil">Perfil</label><select id="perfil"></select></div>
+          <div><label class="etiqueta-campo" for="nicho">Nicho</label><select id="nicho"></select></div>
+          <div><label class="etiqueta-campo" for="nivel">Nivel</label><select id="nivel"></select></div>
+        </div>
+
+        <div class="aviso" id="aviso" role="alert" hidden>
+          <span class="material-symbols-rounded">error</span>
+          <div>
+            <strong id="aviso-titulo"></strong>
+            <p id="aviso-mensaje"></p>
+            <details id="aviso-detalle" hidden><summary>Detalle tecnico</summary><p id="aviso-detalle-texto"></p></details>
+          </div>
+        </div>
+
+        <button id="btn-generar" class="boton-primario" type="button">
+          <span class="material-symbols-rounded">auto_awesome</span> <span id="texto-generar">Generar</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="panel-estudiar" role="tabpanel" aria-labelledby="tab-estudiar" hidden>
+      <div id="resultado" aria-live="polite">
+        <p class="estado-vacio">Aun no has generado contenido. Ve a "Crear contenido" para empezar.</p>
+      </div>
+    </div>
   </div>
+
+  <div id="zona-impresion" class="zona-impresion" aria-hidden="true"></div>
 
   <script>
     const EXTENSIONES_VALIDAS = ["pdf", "md", "txt"];
@@ -505,6 +607,35 @@
     let ultimoIdError = null;
     let idSolicitudPendiente = null;
     let estadoQuiz = null;
+    let ultimoResultado = null;
+    let ultimaSolicitud = null;
+
+    // ---------- Pestañas ----------
+
+    function cambiarPestaña(nombre) {
+      const activarCrear = nombre === "crear";
+      const tabCrear = document.getElementById("tab-crear");
+      const tabEstudiar = document.getElementById("tab-estudiar");
+      tabCrear.setAttribute("aria-selected", String(activarCrear));
+      tabCrear.tabIndex = activarCrear ? 0 : -1;
+      tabEstudiar.setAttribute("aria-selected", String(!activarCrear));
+      tabEstudiar.tabIndex = activarCrear ? -1 : 0;
+      document.getElementById("panel-crear").hidden = !activarCrear;
+      document.getElementById("panel-estudiar").hidden = activarCrear;
+      ajustarAltura();
+    }
+
+    document.getElementById("tab-crear").addEventListener("click", () => cambiarPestaña("crear"));
+    document.getElementById("tab-estudiar").addEventListener("click", () => cambiarPestaña("estudiar"));
+    document.querySelectorAll('[role="tab"]').forEach((pestaña, indice, lista) => {
+      pestaña.addEventListener("keydown", (evento) => {
+        if (evento.key !== "ArrowRight" && evento.key !== "ArrowLeft") return;
+        evento.preventDefault();
+        const siguiente = lista[(indice + (evento.key === "ArrowRight" ? 1 : lista.length - 1)) % lista.length];
+        siguiente.focus();
+        siguiente.click();
+      });
+    });
 
     // ---------- Comunicacion con Streamlit ----------
 
@@ -591,9 +722,11 @@
       return marcado ? marcado.value : "";
     }
 
-    function mostrarAviso(titulo, mensaje) {
+    function mostrarAviso(titulo, mensaje, detalle = "") {
       document.getElementById("aviso-titulo").textContent = titulo;
       document.getElementById("aviso-mensaje").textContent = mensaje;
+      document.getElementById("aviso-detalle-texto").textContent = detalle;
+      document.getElementById("aviso-detalle").hidden = !detalle;
       document.getElementById("aviso").hidden = false;
       ajustarAltura();
     }
@@ -608,19 +741,56 @@
       boton.classList.toggle("cargando", activo);
       boton.querySelector(".material-symbols-rounded").textContent = activo ? "progress_activity" : "auto_awesome";
       document.getElementById("texto-generar").textContent = activo ? "Generando..." : "Generar";
+      if (!activo) detenerAnimacionCarga();
+    }
+
+    const PASOS_CARGA = [
+      "Leyendo el documento y buscando los fragmentos mas relevantes...",
+      "Redactando el contenido para tu perfil...",
+      "Verificando que sea fiel a la fuente...",
+    ];
+    let temporizadorCarga = null;
+
+    function detenerAnimacionCarga() {
+      if (temporizadorCarga !== null) { clearInterval(temporizadorCarga); temporizadorCarga = null; }
+    }
+
+    function iniciarAnimacionCarga() {
+      detenerAnimacionCarga();
+      let paso = 0;
+      const pintar = () => {
+        document.querySelectorAll(".agente-paso").forEach((elemento, indice) => {
+          elemento.classList.toggle("activo", indice === paso);
+          elemento.classList.toggle("hecho", indice < paso);
+        });
+        const texto = document.getElementById("texto-carga");
+        if (texto) texto.textContent = PASOS_CARGA[paso];
+      };
+      pintar();
+      // Se avanza por tiempo y se queda en el ultimo paso hasta que llegue el resultado
+      temporizadorCarga = setInterval(() => {
+        if (paso < PASOS_CARGA.length - 1) { paso += 1; pintar(); }
+      }, 7000);
     }
 
     function mostrarCargando(formato) {
       const info = INFO_FORMATOS[formato] || { etiqueta: formato };
       estadoQuiz = null;
       document.getElementById("resultado").innerHTML = `
-        <div class="tarjeta-resultado tarjeta-cargando">
-          ${icono("progress_activity")}
-          <div>
-            <h2>Preparando tu ${escaparHtml(info.etiqueta)}</h2>
-            <p>Leyendo el documento, generando el contenido y verificando que sea fiel a la fuente. Puede tardar un minuto.</p>
+        <div class="tarjeta-resultado tarjeta-cargando" role="status">
+          <h2>Preparando tu ${escaparHtml(info.etiqueta)}</h2>
+          <div class="animacion-agentes" aria-hidden="true">
+            <div class="agente-paso">${icono("search")} Investiga</div>
+            <span class="conector-agentes"></span>
+            <div class="agente-paso">${icono("edit_note")} Redacta</div>
+            <span class="conector-agentes"></span>
+            <div class="agente-paso">${icono("fact_check")} Critica</div>
           </div>
+          <div class="barra-carga" aria-hidden="true"><span></span></div>
+          <p id="texto-carga">${escaparHtml(PASOS_CARGA[0])}</p>
+          <p class="nota-tiempo">Puede tardar hasta un minuto.</p>
         </div>`;
+      iniciarAnimacionCarga();
     }
 
     // ---------- Resultado: cabecera comun ----------
@@ -644,6 +814,7 @@
       const anclaje = Math.round(Math.min(1, Math.max(0, Number(evaluacion.anclaje_fuente_score) || 0)) * 100);
       const claridad = evaluacion.claridad_pedagogica || "";
       const conceptos = metadatos.conceptos_clave || [];
+      const prerrequisitos = metadatos.prerrequisitos || [];
 
       let html = `<div class="chips-meta">
         <span class="chip">${icono(info.icono)} ${escaparHtml(info.etiqueta)}</span>
@@ -664,6 +835,9 @@
       if (evaluacion.observaciones) {
         html += `<p class="nota-critico">${icono("rate_review")}<span>${formatearTexto(evaluacion.observaciones)}</span></p>`;
       }
+      if (prerrequisitos.length > 0) {
+        html += `<p class="nota-critico">${icono("checklist")}<span><strong>Prerrequisitos:</strong> ${prerrequisitos.map(escaparHtml).join(", ")}</span></p>`;
+      }
       // En el quiz los conceptos son los enunciados: mostrarlos adelantaria las preguntas
       if (formato !== "Quiz" && conceptos.length > 0) {
         html += `<details class="conceptos">
@@ -674,9 +848,41 @@
       return html;
     }
 
+    function recortar(texto, maximo) {
+      const limpio = String(texto ?? "").replace(/\s+/g, " ").trim();
+      return limpio.length > maximo ? `${limpio.slice(0, maximo).trimEnd()}...` : limpio;
+    }
+
+    function htmlFuentes(resultado) {
+      const fuentes = resultado.fuentes || [];
+      if (fuentes.length === 0) return "";
+      return `
+        <details class="fuentes">
+          <summary>${icono("find_in_page")} Fuentes usadas (${fuentes.length})</summary>
+          <ol class="lista-fuentes">
+            ${fuentes.map((fuente) => `
+              <li>
+                <span class="etiqueta-fuente">${escaparHtml(fuente.fuente)}</span>
+                <blockquote>${escaparHtml(recortar(fuente.texto, 280))}</blockquote>
+              </li>`).join("")}
+          </ol>
+        </details>`;
+    }
+
+    function htmlBarraRegenerar() {
+      if (!ultimaSolicitud) return "";
+      return `
+        <div class="barra-regenerar">
+          <button type="button" class="boton-secundario" data-accion="regenerar">${icono("refresh")} Regenerar</button>
+          <span class="ayuda">Pide otra version con el mismo documento y las mismas opciones.</span>
+        </div>`;
+    }
+
     function mostrarResultado(resultado) {
       const contenedor = document.getElementById("resultado");
+      detenerAnimacionCarga();
       estadoQuiz = null;
+      ultimoResultado = resultado;
       if (!resultado) { contenedor.innerHTML = ""; return; }
       const contenido = resultado.contenido_adaptado || {};
       const formato = detectarFormato(resultado);
@@ -686,8 +892,23 @@
           <p class="intro-resultado">${formatearTexto(contenido.introduccion_contextualizada)}</p>
           ${htmlMetadatos(resultado, formato)}
           <div class="cuerpo-formato" id="cuerpo-formato">${RENDERIZADORES[formato](contenido)}</div>
+          ${htmlFuentes(resultado)}
+          ${htmlBarraExportar(formato)}
+          ${htmlBarraRegenerar()}
         </div>`;
       if (formato === "Quiz") iniciarQuiz(contenido.preguntas || []);
+      cambiarPestaña("estudiar");
+    }
+
+    function htmlBarraExportar(formato) {
+      const csvAplica = formato === "Flashcards" || formato === "Quiz";
+      return `
+        <div class="barra-exportar">
+          <span class="ayuda">${icono("download")} Exportar</span>
+          <button type="button" class="boton-secundario" data-accion="exportar-md">${icono("description")} Markdown</button>
+          ${csvAplica ? `<button type="button" class="boton-secundario" data-accion="exportar-csv">${icono("style")} CSV (Anki)</button>` : ""}
+          <button type="button" class="boton-secundario" data-accion="exportar-pdf">${icono("picture_as_pdf")} PDF</button>
+        </div>`;
     }
 
     // ---------- Flashcards ----------
@@ -1099,6 +1320,185 @@
       Guion: renderGuion,
     };
 
+    // ---------- Exportacion (Markdown, CSV para Anki, PDF via impresion) ----------
+
+    function descargarArchivo(nombreArchivo, contenido, tipoMime) {
+      const blob = new Blob([contenido], { type: tipoMime });
+      const url = URL.createObjectURL(blob);
+      const enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = nombreArchivo;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function slugArchivo(texto) {
+      return String(texto ?? "documento")
+        .normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "documento";
+    }
+
+    function generarMarkdown(resultado, formato) {
+      const contenido = resultado.contenido_adaptado || {};
+      const metadatos = resultado.metadatos || {};
+      let md = `# ${contenido.titulo || ""}\n\n`;
+      if (contenido.introduccion_contextualizada) md += `${contenido.introduccion_contextualizada}\n\n`;
+      md += `**Perfil:** ${metadatos.perfil_aplicado || ""} · **Formato:** ${metadatos.formato_generado || formato} · **Tiempo estimado:** ~${metadatos.tiempo_estimado_estudio_minutos || 0} min\n\n`;
+      if ((metadatos.prerrequisitos || []).length > 0) {
+        md += `**Prerrequisitos:** ${metadatos.prerrequisitos.join(", ")}\n\n`;
+      }
+      if (formato !== "Quiz" && (metadatos.conceptos_clave || []).length > 0) {
+        md += `**Conceptos clave:** ${metadatos.conceptos_clave.join(", ")}\n\n`;
+      }
+      md += "---\n\n";
+
+      if (formato === "Flashcards") {
+        (contenido.items || []).forEach((item, i) => {
+          md += `## Tarjeta ${i + 1}\n\n**P:** ${item.frente}\n\n**R:** ${item.dorso}\n\n`;
+          if (item.pista_didactica) md += `> Pista: ${item.pista_didactica}\n\n`;
+        });
+      } else if (formato === "Tutorial") {
+        if ((contenido.objetivos || []).length > 0) {
+          md += `## Al terminar podras\n\n${contenido.objetivos.map((o) => `- ${o}`).join("\n")}\n\n`;
+        }
+        (contenido.pasos || []).forEach((paso, i) => {
+          md += `## Paso ${i + 1}: ${paso.titulo}\n\n${paso.explicacion}\n\n`;
+          if (paso.ejemplo) md += "```\n" + limpiarBloqueCodigo(paso.ejemplo) + "\n```\n\n";
+          if (paso.consejo) md += `> Consejo: ${paso.consejo}\n\n`;
+        });
+        if (contenido.conclusion) md += `## Para cerrar\n\n${contenido.conclusion}\n\n`;
+      } else if (formato === "Quiz") {
+        (contenido.preguntas || []).forEach((pregunta, i) => {
+          md += `## Pregunta ${i + 1}\n\n${pregunta.enunciado}\n\n`;
+          (pregunta.opciones || []).forEach((opcion, j) => {
+            md += `- [${j === pregunta.indice_correcto ? "x" : " "}] ${opcion}\n`;
+          });
+          md += "\n";
+          if (pregunta.explicacion) md += `> Explicacion: ${pregunta.explicacion}\n\n`;
+        });
+      } else if (formato === "TLDR") {
+        if (contenido.resumen_una_linea) md += `> ${contenido.resumen_una_linea}\n\n`;
+        (contenido.puntos_clave || []).forEach((punto) => {
+          md += `## ${punto.titulo}\n\n${punto.detalle}\n\n`;
+        });
+        if ((contenido.acciones_recomendadas || []).length > 0) {
+          md += `## Que hacer ahora\n\n${contenido.acciones_recomendadas.map((a) => `- [ ] ${a}`).join("\n")}\n\n`;
+        }
+      } else if (formato === "Guion") {
+        let inicio = 0;
+        (contenido.escenas || []).forEach((escena, i) => {
+          const fin = inicio + (Number(escena.duracion_segundos) || 0);
+          md += `## Escena ${i + 1}: ${escena.titulo} (${formatearDuracion(inicio)} - ${formatearDuracion(fin)})\n\n`;
+          md += `**Narracion:** ${escena.narracion}\n\n**Apoyo visual:** ${escena.apoyo_visual}\n\n`;
+          inicio = fin;
+        });
+        if (contenido.cierre) md += `## Cierre\n\n${contenido.cierre}\n\n`;
+      }
+      return md;
+    }
+
+    function _celdaCsv(texto) {
+      const limpio = String(texto ?? "").replace(/\r?\n/g, " ").trim();
+      return `"${limpio.replace(/"/g, '""')}"`;
+    }
+
+    function generarCsvAnki(resultado, formato) {
+      const contenido = resultado.contenido_adaptado || {};
+      const filas = [];
+      if (formato === "Flashcards") {
+        (contenido.items || []).forEach((item) => {
+          const dorso = item.pista_didactica ? `${item.dorso} (${item.pista_didactica})` : item.dorso;
+          filas.push([item.frente, dorso]);
+        });
+      } else if (formato === "Quiz") {
+        (contenido.preguntas || []).forEach((pregunta) => {
+          const correcta = (pregunta.opciones || [])[pregunta.indice_correcto] || "";
+          const reverso = pregunta.explicacion ? `${correcta} — ${pregunta.explicacion}` : correcta;
+          filas.push([pregunta.enunciado, reverso]);
+        });
+      }
+      return filas.map((fila) => fila.map(_celdaCsv).join(",")).join("\r\n");
+    }
+
+    function generarHtmlImpresion(resultado, formato) {
+      const contenido = resultado.contenido_adaptado || {};
+      let cuerpo = "";
+      if (formato === "Flashcards") {
+        cuerpo = (contenido.items || []).map((item, i) => `
+          <div class="item-impresion">
+            <p><strong>${i + 1}. ${formatearTexto(item.frente)}</strong></p>
+            <p>${formatearTexto(item.dorso)}</p>
+            ${item.pista_didactica ? `<p><em>Pista: ${formatearTexto(item.pista_didactica)}</em></p>` : ""}
+          </div>`).join("");
+      } else if (formato === "Tutorial") {
+        const objetivos = (contenido.objetivos || []).map((o) => `<li>${formatearTexto(o)}</li>`).join("");
+        const pasos = (contenido.pasos || []).map((paso, i) => `
+          <div class="item-impresion">
+            <h3>Paso ${i + 1}: ${formatearTexto(paso.titulo)}</h3>
+            <p>${formatearTexto(paso.explicacion)}</p>
+            ${paso.ejemplo ? `<pre>${escaparHtml(limpiarBloqueCodigo(paso.ejemplo))}</pre>` : ""}
+            ${paso.consejo ? `<p><em>Consejo: ${formatearTexto(paso.consejo)}</em></p>` : ""}
+          </div>`).join("");
+        cuerpo = (objetivos ? `<h3>Al terminar podras</h3><ul>${objetivos}</ul>` : "") + pasos
+          + (contenido.conclusion ? `<p><strong>Para cerrar:</strong> ${formatearTexto(contenido.conclusion)}</p>` : "");
+      } else if (formato === "Quiz") {
+        cuerpo = (contenido.preguntas || []).map((pregunta, i) => `
+          <div class="item-impresion">
+            <h3>Pregunta ${i + 1}</h3>
+            <p>${formatearTexto(pregunta.enunciado)}</p>
+            <ul>${(pregunta.opciones || []).map((op, j) => j === pregunta.indice_correcto
+              ? `<li><strong>${formatearTexto(op)} ✓</strong></li>`
+              : `<li>${formatearTexto(op)}</li>`).join("")}</ul>
+            ${pregunta.explicacion ? `<p><em>${formatearTexto(pregunta.explicacion)}</em></p>` : ""}
+          </div>`).join("");
+      } else if (formato === "TLDR") {
+        cuerpo = (contenido.resumen_una_linea ? `<p><strong>${formatearTexto(contenido.resumen_una_linea)}</strong></p>` : "")
+          + (contenido.puntos_clave || []).map((punto) => `
+            <div class="item-impresion"><h3>${formatearTexto(punto.titulo)}</h3><p>${formatearTexto(punto.detalle)}</p></div>`).join("")
+          + ((contenido.acciones_recomendadas || []).length > 0
+            ? `<h3>Que hacer ahora</h3><ul>${contenido.acciones_recomendadas.map((a) => `<li>${formatearTexto(a)}</li>`).join("")}</ul>`
+            : "");
+      } else if (formato === "Guion") {
+        let inicio = 0;
+        cuerpo = (contenido.escenas || []).map((escena, i) => {
+          const fin = inicio + (Number(escena.duracion_segundos) || 0);
+          const html = `
+            <div class="item-impresion">
+              <h3>Escena ${i + 1}: ${formatearTexto(escena.titulo)} (${formatearDuracion(inicio)} - ${formatearDuracion(fin)})</h3>
+              <p><strong>Narracion:</strong> ${formatearTexto(escena.narracion)}</p>
+              <p><strong>Apoyo visual:</strong> ${formatearTexto(escena.apoyo_visual)}</p>
+            </div>`;
+          inicio = fin;
+          return html;
+        }).join("") + (contenido.cierre ? `<p><strong>Cierre:</strong> ${formatearTexto(contenido.cierre)}</p>` : "");
+      }
+      return `<h1>${formatearTexto(contenido.titulo)}</h1><p>${formatearTexto(contenido.introduccion_contextualizada)}</p>${cuerpo}`;
+    }
+
+    function exportarMarkdown() {
+      if (!ultimoResultado) return;
+      const formato = detectarFormato(ultimoResultado);
+      const md = generarMarkdown(ultimoResultado, formato);
+      descargarArchivo(`${slugArchivo(ultimoResultado.contenido_adaptado.titulo)}.md`, md, "text/markdown;charset=utf-8");
+    }
+
+    function exportarCsvAnki() {
+      if (!ultimoResultado) return;
+      const formato = detectarFormato(ultimoResultado);
+      const csv = generarCsvAnki(ultimoResultado, formato);
+      if (!csv) return;
+      descargarArchivo(`${slugArchivo(ultimoResultado.contenido_adaptado.titulo)}-anki.csv`, csv, "text/csv;charset=utf-8");
+    }
+
+    function exportarPDF() {
+      if (!ultimoResultado) return;
+      const formato = detectarFormato(ultimoResultado);
+      document.getElementById("zona-impresion").innerHTML = generarHtmlImpresion(ultimoResultado, formato);
+      window.print();
+    }
+
     // ---------- Eventos del resultado (delegados) ----------
 
     const contenedorResultado = document.getElementById("resultado");
@@ -1112,6 +1512,10 @@
       if (accion === "voltear") voltearTarjeta(objetivo);
       else if (accion === "voltear-todas") voltearTodas(objetivo);
       else if (accion === "modo-narracion") alternarModoNarracion(objetivo);
+      else if (accion === "exportar-md") exportarMarkdown();
+      else if (accion === "exportar-csv") exportarCsvAnki();
+      else if (accion === "exportar-pdf") exportarPDF();
+      else if (accion === "regenerar") regenerar();
       else if (accion !== "completar-paso") manejarAccionQuiz(accion);
     });
 
@@ -1163,7 +1567,9 @@
           ponerCargando(false);
           ultimaClaveResultado = null;
         }
-        mostrarAviso("No se pudo generar el contenido", error.mensaje);
+        detenerAnimacionCarga();
+        mostrarAviso(error.titulo || "No se pudo generar el contenido", error.mensaje, error.detalle || "");
+        cambiarPestaña("crear");
       }
 
       if (resultado && resultado.id_solicitud === idSolicitudPendiente) {
@@ -1217,6 +1623,25 @@
     });
     inputArchivo.addEventListener("change", actualizarNombreArchivo);
 
+    function lanzarGeneracion(datos, regenerar) {
+      const id = Date.now();
+      idSolicitudPendiente = id;
+      ultimaSolicitud = datos;
+      ponerCargando(true);
+      mostrarCargando(datos.formato);
+      cambiarPestaña("estudiar");
+      enviarAStreamlit("streamlit:setComponentValue", {
+        value: { accion: "generar", id, regenerar, ...datos },
+        dataType: "json",
+      });
+      ajustarAltura();
+    }
+
+    function regenerar() {
+      if (!ultimaSolicitud || idSolicitudPendiente !== null) return;
+      lanzarGeneracion(ultimaSolicitud, true);
+    }
+
     document.getElementById("btn-generar").addEventListener("click", () => {
       const archivo = inputArchivo.files[0];
       if (!archivo) { mostrarAviso("Falta el documento", "Sube un PDF, MD o TXT para generar el contenido."); return; }
@@ -1227,24 +1652,14 @@
       const lector = new FileReader();
       lector.onerror = () => mostrarAviso("No se pudo leer el archivo", "Vuelve a seleccionarlo e intenta de nuevo.");
       lector.onload = () => {
-        const id = Date.now();
-        idSolicitudPendiente = id;
-        ponerCargando(true);
-        mostrarCargando(formato);
-        enviarAStreamlit("streamlit:setComponentValue", {
-          value: {
-            accion: "generar",
-            id,
-            archivo_nombre: archivo.name,
-            archivo_base64: lector.result.split(",")[1],
-            perfil: document.getElementById("perfil").value,
-            formato,
-            nicho: document.getElementById("nicho").value,
-            nivel: document.getElementById("nivel").value,
-          },
-          dataType: "json",
-        });
-        ajustarAltura();
+        lanzarGeneracion({
+          archivo_nombre: archivo.name,
+          archivo_base64: lector.result.split(",")[1],
+          perfil: document.getElementById("perfil").value,
+          formato,
+          nicho: document.getElementById("nicho").value,
+          nivel: document.getElementById("nivel").value,
+        }, false);
       };
       lector.readAsDataURL(archivo);
     });

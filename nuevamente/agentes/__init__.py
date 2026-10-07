@@ -15,6 +15,7 @@ from nuevamente.contratos import (
     EvaluacionCalidad,
     Solicitud,
 )
+from nuevamente.resiliencia import invocar_con_espera
 
 UMBRAL_ANCLAJE = 0.7
 MAX_INTENTOS = 2
@@ -78,14 +79,14 @@ def _invocar(prompt: str, modelo_salida: type[BaseModel] | None = None):
     if modelo_salida is not None:
         llm = llm.with_structured_output(modelo_salida)
     try:
-        return llm.with_retry(stop_after_attempt=3).invoke(prompt)
+        return invocar_con_espera(llm, prompt)
     except Exception:
         if os.environ.get("LLM_PROVEEDOR", "gemini") != "ollama":
             raise
         llm_fallback = _obtener_llm_fallback()
         if modelo_salida is not None:
             llm_fallback = llm_fallback.with_structured_output(modelo_salida)
-        return llm_fallback.with_retry(stop_after_attempt=3).invoke(prompt)
+        return invocar_con_espera(llm_fallback, prompt)
 
 class EstadoAgente(TypedDict):
     solicitud: Solicitud
