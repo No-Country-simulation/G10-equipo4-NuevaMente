@@ -51,21 +51,47 @@ INSTRUCCIONES_POR_FORMATO = {
 _llm_primario = None
 _llm_fallback = None
 
+def _leer_configuracion(clave: str, defecto: str | None = None) -> str | None:
+    valor = os.environ.get(clave)
+
+    if valor:
+        return valor
+
+    try:
+        import streamlit as st
+        return st.secrets.get(clave, defecto)
+    except Exception:
+        return defecto
+
 def _construir_llm(proveedor: str):
     if proveedor == "ollama":
+        base_url = _leer_configuracion("OLLAMA_BASE_URL")
+        if not base_url:
+            raise RuntimeError(
+                "Falta configurar la variable OLLAMA_BASE_URL."
+            )
+
         return ChatOllama(
-            model=os.environ.get("OLLAMA_MODEL", "qwen2.5:7b"),
-            base_url=os.environ["OLLAMA_BASE_URL"],
+            model=_leer_configuracion("OLLAMA_MODEL", "qwen2.5:7b"),
+            base_url=base_url,
         )
+
+    api_key = _leer_configuracion("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "Falta configurar la variable GEMINI_API_KEY."
+        )
+
     return ChatGoogleGenerativeAI(
-        model=os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite"),
-        google_api_key=os.environ["GEMINI_API_KEY"],
+        model=_leer_configuracion("GEMINI_MODEL", "gemini-3.5-flash-lite"),
+        google_api_key=api_key,
     )
 
 def _obtener_llm_primario():
     global _llm_primario
     if _llm_primario is None:
-        _llm_primario = _construir_llm(os.environ.get("LLM_PROVEEDOR", "gemini"))
+        proveedor = _leer_configuracion("LLM_PROVEEDOR", "gemini")
+        _llm_primario = _construir_llm(proveedor)
     return _llm_primario
 
 def _obtener_llm_fallback():
@@ -74,6 +100,7 @@ def _obtener_llm_fallback():
         _llm_fallback = _construir_llm("gemini")
     return _llm_fallback
 
+
 def _invocar(prompt: str, modelo_salida: type[BaseModel] | None = None):
     llm = _obtener_llm_primario()
     if modelo_salida is not None:
@@ -81,7 +108,8 @@ def _invocar(prompt: str, modelo_salida: type[BaseModel] | None = None):
     try:
         return invocar_con_espera(llm, prompt)
     except Exception:
-        if os.environ.get("LLM_PROVEEDOR", "gemini") != "ollama":
+        proveedor = _leer_configuracion("LLM_PROVEEDOR", "gemini")
+        if proveedor != "ollama":
             raise
         llm_fallback = _obtener_llm_fallback()
         if modelo_salida is not None:

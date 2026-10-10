@@ -7,5 +7,6 @@ langgraph
 langchain-google-genai
 chromadb
 pypdf
-oci
 langchain-ollama
+supabase
+python-dotenv>=1.2.3

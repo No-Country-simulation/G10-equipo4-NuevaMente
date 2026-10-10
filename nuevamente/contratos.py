@@ -206,7 +206,10 @@ def procesar(solicitud: Solicitud, usar_cache: bool = True) -> Respuesta:
 
     tiempo_estimado, conceptos_clave = _resumir_contenido(contenido)
 
-    clave = f"{doc_id}-{solicitud.perfil_destinatario}-{solicitud.formato_salida}.json".lower()
+    clave = (
+        f"generados_nuevamente/{doc_id}-{solicitud.perfil_destinatario}-"
+        f"{solicitud.formato_salida}.json"
+    ).lower()
     try:
         guardar(clave, contenido.model_dump_json().encode("utf-8"))
         status_upload = "completado"
@@ -225,13 +228,12 @@ def procesar(solicitud: Solicitud, usar_cache: bool = True) -> Respuesta:
         contenido_adaptado=contenido,
         evaluacion_calidad=evaluacion,
         almacenamiento_oci=AlmacenamientoOCI(
-            bucket=os.environ.get("OCI_BUCKET_NAME", ""),
+            bucket=os.environ.get("SUPABASE_BUCKET", ""),
             objeto_id=clave,
             status_upload=status_upload,
         ),
         fuentes=fuentes,
     )
-
 
 if __name__ == "__main__":
     ejemplo = Solicitud(

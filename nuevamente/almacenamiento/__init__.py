@@ -2,34 +2,78 @@
 
 import os
 
-import oci
-
-_cliente: oci.object_storage.ObjectStorageClient | None = None
+from supabase import create_client, Client
 
 
-def _obtener_cliente() -> oci.object_storage.ObjectStorageClient:
+_cliente: Client | None = None
+
+
+
+def _obtener_cliente() -> Client:
     global _cliente
+
     if _cliente is None:
-        try:
-            config = oci.config.from_file()
-            _cliente = oci.object_storage.ObjectStorageClient(config)
-        except oci.exceptions.ConfigFileNotFound:
-            signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
-            _cliente = oci.object_storage.ObjectStorageClient(config={}, signer=signer)
+        import streamlit as st
+
+        url = os.environ.get("SUPABASE_URL")
+        key = os.environ.get("SUPABASE_KEY")
+
+        if not url:
+            url = st.secrets.get("SUPABASE_URL")
+
+        if not key:
+            key = st.secrets.get("SUPABASE_KEY")
+
+        if not url or not key:
+            raise RuntimeError(
+                "Faltan las credenciales SUPABASE_URL o SUPABASE_KEY."
+            )
+
+        _cliente = create_client(url, key)
+
     return _cliente
 
 
-def guardar(clave: str, contenido: bytes) -> str:
-    cliente = _obtener_cliente()
-    namespace = os.environ["OCI_NAMESPACE"]
-    bucket = os.environ["OCI_BUCKET_NAME"]
-    cliente.put_object(namespace, bucket, clave, contenido)
-    return clave
+def _obtener_bucket() -> str:
+    bucket = os.environ.get("SUPABASE_BUCKET")
 
+    if not bucket:
+        try:
+            import streamlit as st
+            bucket = st.secrets.get("SUPABASE_BUCKET")
+        except Exception:
+            bucket = None
+
+    if not bucket:
+        raise RuntimeError(
+            "Falta configurar la variable SUPABASE_BUCKET."
+        )
+
+    return bucket
+
+def guardar(
+    clave: str,
+    contenido: bytes,
+    content_type: str = "application/json",
+) -> str:
+    cliente = _obtener_cliente()
+    bucket = _obtener_bucket()
+
+    cliente.storage.from_(bucket).upload(
+        path=clave,
+        file=contenido,
+        file_options={
+            "content-type": content_type,
+            "upsert": "true",
+        },
+    )
+
+    return clave
 
 def leer(clave: str) -> bytes:
     cliente = _obtener_cliente()
-    namespace = os.environ["OCI_NAMESPACE"]
-    bucket = os.environ["OCI_BUCKET_NAME"]
-    respuesta = cliente.get_object(namespace, bucket, clave)
-    return respuesta.data.content
+    bucket = _obtener_bucket()
+
+    respuesta = cliente.storage.from_(bucket).download(clave)
+
+    return respuesta

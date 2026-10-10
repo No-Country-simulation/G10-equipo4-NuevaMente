@@ -9,6 +9,8 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 import base64
 import logging
+import re
+import unicodedata
 
 import streamlit as st
 from componente import render_ui
@@ -59,22 +61,85 @@ if valor and valor.get("accion") == "generar" and valor.get("id") != st.session_
     st.session_state.ultimo_id = valor["id"]
     try:
         contenido_bytes = base64.b64decode(valor["archivo_base64"])
-        contenido_texto = leer_documento(valor["archivo_nombre"], contenido_bytes)
+
+        # Guardar el documento original en Supabase
+        from nuevamente.almacenamiento import guardar
+
+        nombre_archivo = valor["archivo_nombre"]
+        extension = nombre_archivo.lower().rsplit(".", 1)[-1]
+
+        tipos_mime = {
+            "pdf": "application/pdf",
+            "txt": "text/plain",
+            "md": "text/markdown",
+        }
+
+        content_type = tipos_mime.get(
+            extension,
+            "application/octet-stream"
+        )
+
+        # Crear un nombre seguro para Supabase Storage
+        nombre_seguro = unicodedata.normalize(
+            "NFKD",
+            nombre_archivo
+        ).encode("ascii", "ignore").decode("ascii")
+
+        nombre_seguro = re.sub(
+            r"[^a-zA-Z0-9._-]",
+            "-",
+            nombre_seguro
+        )
+
+        try:
+            guardar(
+                f"subidos_usuario/{nombre_seguro}",
+                contenido_bytes,
+                content_type,
+            )
+        except Exception:
+            logging.getLogger(__name__).exception(
+                "No se pudo guardar el documento original en Supabase"
+            )
+
+        # Continuar con el procesamiento normal del documento
+        contenido_texto = leer_documento(
+            nombre_archivo,
+            contenido_bytes
+        )
+
         if not contenido_texto.strip():
-            raise ValueError("No se pudo extraer texto del documento. Si es un PDF escaneado, prueba con uno que tenga texto seleccionable.")
+            raise ValueError(
+                "No se pudo extraer texto del documento. "
+                "Si es un PDF escaneado, prueba con uno que tenga texto seleccionable."
+            )
+
         solicitud = Solicitud(
-            documento_titulo=valor["archivo_nombre"],
+            documento_titulo=nombre_archivo,
             documento_contenido=contenido_texto,
             perfil_destinatario=valor["perfil"],
             formato_salida=valor["formato"],
             nicho_sector=valor["nicho"],
             nivel_detalle=valor["nivel"],
         )
+
         with st.spinner("Generando contenido..."):
-            respuesta = procesar(solicitud, usar_cache=not valor.get("regenerar", False))
-        st.session_state.resultado = {**respuesta.model_dump(), "id_solicitud": valor["id"]}
+            respuesta = procesar(
+                solicitud,
+                usar_cache=not valor.get("regenerar", False)
+            )
+
+        st.session_state.resultado = {
+            **respuesta.model_dump(),
+            "id_solicitud": valor["id"]
+        }
         st.session_state.error = None
+
     except Exception as exc:
         logging.getLogger(__name__).exception("Fallo al generar contenido")
-        st.session_state.error = {**describir_error(exc), "id": valor["id"]}
+        st.session_state.error = {
+            **describir_error(exc),
+            "id": valor["id"]
+        }
+
     st.rerun()
