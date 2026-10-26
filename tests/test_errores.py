@@ -31,7 +31,7 @@ def test_valueerror_propio_conserva_su_mensaje():
 def test_variable_de_entorno_faltante_se_explica_sin_jerga():
     resultado = describir_error(KeyError("GEMINI_API_KEY"))
 
-    assert "configuracion" in resultado["titulo"].lower()
+    assert "configuración" in resultado["titulo"].lower()
     assert resultado["reintentable"] is False
     assert "GEMINI_API_KEY" in resultado["detalle"]  # el dato tecnico queda disponible para quien programa
 
@@ -40,7 +40,7 @@ def test_variable_de_entorno_faltante_se_explica_sin_jerga():
 def test_cuota_se_explica_y_se_puede_reintentar(mensaje):
     resultado = describir_error(RuntimeError(mensaje))
 
-    assert "limite" in resultado["titulo"].lower()
+    assert "límite" in resultado["titulo"].lower()
     assert resultado["reintentable"] is True
 
 
@@ -48,7 +48,7 @@ def test_cuota_se_explica_y_se_puede_reintentar(mensaje):
 def test_credenciales_invalidas_no_son_reintentables(mensaje):
     resultado = describir_error(RuntimeError(mensaje))
 
-    assert "configuracion" in resultado["mensaje"].lower()
+    assert "configuración" in resultado["mensaje"].lower()
     assert resultado["reintentable"] is False
 
 
@@ -63,7 +63,7 @@ def test_fallas_de_conexion_son_reintentables(mensaje):
 def test_error_desconocido_tiene_mensaje_generico_y_detalle():
     resultado = describir_error(RuntimeError("algo raro"))
 
-    assert resultado["titulo"] == "Algo salio mal"
+    assert resultado["titulo"] == "Algo salió mal"
     assert "algo raro" in resultado["detalle"]
 
 

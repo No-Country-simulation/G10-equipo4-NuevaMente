@@ -12,10 +12,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import base64
+import re
+import unicodedata
 
 import streamlit as st
-from componente import render_ui
+from componente import OPCIONES, configurar_pagina, manejar_cambio_de_tema, render_ui
+from flujo import ejecutar_accion, iniciar_estado
 
 from nuevamente.contratos import (
     AlmacenamientoOCI,
@@ -32,18 +34,24 @@ from nuevamente.contratos import (
     PreguntaQuiz,
     PuntoClave,
     Respuesta,
+    Solicitud,
+    _prerrequisitos,
     _resumir_contenido,
 )
-from nuevamente.ingesta import leer_documento
-
-opciones = {
-    "perfiles": ["Principiante", "Junior", "Lider Tecnico", "Ejecutivo"],
-    "formatos": ["Flashcards", "Tutorial", "Quiz", "TLDR", "Guion"],
-    "nichos": ["General", "Fintech", "Salud", "E-commerce"],
-    "niveles": ["Didactico", "Intermedio", "Profundo"],
-}
 
 INTRO = "Una VCN es la red privada donde viven tus recursos en OCI. Este contenido es de ejemplo (modo demo)."
+
+# En el demo cada perfil recibe una introduccion distinta, para que "Comparar perfiles" muestre la diferencia
+INTRO_POR_PERFIL = {
+    "Principiante": "Imagina un barrio cerrado: tus servidores viven dentro y tú decides qué puertas abrir. Eso es una VCN.",
+    "Junior": "Una VCN es la red privada de tu proyecto en OCI: la creas, la divides en subredes y conectas tus servicios.",
+    "Lider Tecnico": "La VCN es una red regional con CIDR propio: segmenta por subredes y controla el egreso con NAT y Service Gateway.",
+    "Ejecutivo": "La VCN aísla los sistemas de la empresa en la nube y reduce el riesgo de exponer datos sensibles.",
+}
+NOMBRES_AJUSTE = {
+    "mas_ejemplos": "más ejemplos", "mas_corto": "más corto", "mas_tecnico": "más técnico",
+    "menos_jerga": "menos jerga", "mas_elementos": "más elementos",
+}
 
 
 def _contenido_de_ejemplo(formato: str, titulo: str):
@@ -56,17 +64,17 @@ def _contenido_de_ejemplo(formato: str, titulo: str):
                 PasoTutorial(
                     titulo="Abre el asistente de VCN",
                     explicacion="En la consola ve a Networking y elige **Start VCN Wizard**.",
-                    consejo="Elige la region correcta antes de empezar.",
+                    consejo="Elige la región correcta antes de empezar.",
                 ),
                 PasoTutorial(
                     titulo="Crea la VCN desde la CLI",
-                    explicacion="Tambien puedes usar `oci network vcn create`.",
+                    explicacion="También puedes usar `oci network vcn create`.",
                     ejemplo="oci network vcn create \\\n  --compartment-id $COMPARTMENT_ID \\\n  --cidr-blocks '[\"10.0.0.0/16\"]'",
                 ),
                 PasoTutorial(
                     titulo="Revisa las reglas de seguridad",
                     explicacion="Permite solo el puerto 443 desde el balanceador.",
-                    ejemplo="Por ejemplo, solo el gateway de pagos recibe trafico publico.",
+                    ejemplo="Por ejemplo, solo el gateway de pagos recibe tráfico público.",
                     consejo="No abras 0.0.0.0/0 en el puerto 22.",
                 ),
             ],
@@ -78,11 +86,11 @@ def _contenido_de_ejemplo(formato: str, titulo: str):
             introduccion_contextualizada=INTRO,
             preguntas=[
                 PreguntaQuiz(
-                    enunciado="Que componente permite a una instancia privada salir a internet sin exponerse?",
+                    enunciado="¿Qué componente permite a una instancia privada salir a internet sin exponerse?",
                     opciones=["NAT Gateway", "Internet Gateway", "Service Gateway", "DRG"],
                     indice_correcto=0,
                     explicacion="El NAT Gateway solo permite conexiones iniciadas desde dentro de la VCN.",
-                    pista="Piensa en trafico solo de salida.",
+                    pista="Piensa en tráfico solo de salida.",
                 ),
                 PreguntaQuiz(
                     enunciado="Una VCN puede abarcar varias regiones.",
@@ -91,11 +99,11 @@ def _contenido_de_ejemplo(formato: str, titulo: str):
                     explicacion="La VCN es un recurso regional.",
                 ),
                 PreguntaQuiz(
-                    enunciado="Que define el rango de direcciones IP de la VCN?",
+                    enunciado="¿Qué define el rango de direcciones IP de la VCN?",
                     opciones=["La lista de seguridad", "El bloque CIDR", "La tabla de rutas"],
                     indice_correcto=1,
                     explicacion="El bloque CIDR, por ejemplo `10.0.0.0/16`.",
-                    pista="Es una notacion con barra.",
+                    pista="Es una notación con barra.",
                 ),
             ],
         )
@@ -103,9 +111,9 @@ def _contenido_de_ejemplo(formato: str, titulo: str):
         return ContenidoTLDR(
             titulo=titulo,
             introduccion_contextualizada=INTRO,
-            resumen_una_linea="Una VCN aisla tus recursos en OCI y tu decides por donde entra y sale el trafico.",
+            resumen_una_linea="Una VCN aísla tus recursos en OCI y tú decides por dónde entra y sale el tráfico.",
             puntos_clave=[
-                PuntoClave(titulo="Es regional", detalle="Vive en una region y se divide en subredes."),
+                PuntoClave(titulo="Es regional", detalle="Vive en una región y se divide en subredes."),
                 PuntoClave(titulo="Gateways", detalle="Internet, NAT y Service Gateway controlan cada salida."),
                 PuntoClave(titulo="Seguridad", detalle="Listas de seguridad y NSG filtran por puerto y origen."),
             ],
@@ -119,11 +127,11 @@ def _contenido_de_ejemplo(formato: str, titulo: str):
                 EscenaGuion(
                     titulo="Gancho",
                     narracion="Imagina que tu app vive en un edificio sin puertas. Hoy le ponemos una, bien vigilada.",
-                    apoyo_visual="Animacion de un edificio cerrado con un candado",
+                    apoyo_visual="Animación de un edificio cerrado con un candado",
                     duracion_segundos=25,
                 ),
                 EscenaGuion(
-                    titulo="Que es una VCN",
+                    titulo="Qué es una VCN",
                     narracion="Una VCN es tu red privada en la nube de Oracle.",
                     apoyo_visual="Diagrama con la VCN y dos subredes",
                     duracion_segundos=70,
@@ -136,17 +144,17 @@ def _contenido_de_ejemplo(formato: str, titulo: str):
         introduccion_contextualizada=INTRO,
         items=[
             ItemFlashcard(
-                frente="Que es una VCN?",
-                dorso="Una red virtual privada y personalizable dentro de una region de OCI.",
+                frente="¿Qué es una VCN?",
+                dorso="Una red virtual privada y personalizable dentro de una región de OCI.",
                 pista_didactica="Piensa en un barrio cerrado con calles propias.",
             ),
             ItemFlashcard(
-                frente="Para que sirve un Internet Gateway?",
-                dorso="Permite trafico entre subredes publicas e internet.",
+                frente="¿Para qué sirve un Internet Gateway?",
+                dorso="Permite tráfico entre subredes públicas e internet.",
                 pista_didactica="Es la puerta principal del barrio.",
             ),
             ItemFlashcard(
-                frente="Que pasa con `<b>etiquetas</b>` en el texto?",
+                frente="¿Qué pasa con `<b>etiquetas</b>` en el texto?",
                 dorso="Se muestran como texto: la UI escapa el HTML que genere el modelo.",
                 pista_didactica="Prueba de seguridad.",
             ),
@@ -154,16 +162,29 @@ def _contenido_de_ejemplo(formato: str, titulo: str):
     )
 
 
-def _respuesta_de_ejemplo(valor: dict) -> Respuesta:
-    contenido = _contenido_de_ejemplo(valor["formato"], f"[Demo] {valor['archivo_nombre']}")
+def _intro_de_ejemplo(solicitud: Solicitud) -> str:
+    intro = INTRO_POR_PERFIL.get(solicitud.perfil_destinatario, INTRO)
+    if solicitud.ajustes:
+        intro += " Versión ajustada: " + ", ".join(NOMBRES_AJUSTE[a] for a in solicitud.ajustes) + "."
+    if solicitud.idioma_salida != "Español":
+        intro += f" (Modo demo: con la IA real, todo este contenido estaría en {solicitud.idioma_salida}.)"
+    return intro
+
+
+def procesar_demo(solicitud: Solicitud, usar_cache: bool = True) -> Respuesta:
+    """Misma firma que nuevamente.contratos.procesar, pero sin LLM ni almacenamiento."""
+    contenido = _contenido_de_ejemplo(solicitud.formato_salida, f"[Demo] {solicitud.documento_titulo}")
+    contenido = contenido.model_copy(update={"introduccion_contextualizada": _intro_de_ejemplo(solicitud)})
     tiempo_estimado, conceptos_clave = _resumir_contenido(contenido)
     return Respuesta(
         status="exito",
         metadatos=Metadatos(
-            perfil_aplicado=valor["perfil"],
-            formato_generado=valor["formato"],
+            perfil_aplicado=solicitud.perfil_destinatario,
+            formato_generado=solicitud.formato_salida,
             tiempo_estimado_estudio_minutos=tiempo_estimado,
             conceptos_clave=conceptos_clave,
+            prerrequisitos=_prerrequisitos(solicitud),
+            idioma_salida=solicitud.idioma_salida,
         ),
         contenido_adaptado=contenido,
         evaluacion_calidad=EvaluacionCalidad(
@@ -173,30 +194,60 @@ def _respuesta_de_ejemplo(valor: dict) -> Respuesta:
     )
 
 
+def _respuesta_de_ejemplo(valor: dict, texto: str) -> Respuesta:
+    return procesar_demo(
+        Solicitud(
+            documento_titulo=valor["archivo_nombre"],
+            documento_contenido=texto,
+            perfil_destinatario=valor["perfil"],
+            formato_salida=valor["formato"],
+            nicho_sector=valor["nicho"],
+            nivel_detalle=valor["nivel"],
+        )
+    )
+
+
+def _palabras(texto: str) -> set[str]:
+    sin_tildes = unicodedata.normalize("NFKD", texto.lower()).encode("ascii", "ignore").decode("ascii")
+    return {palabra for palabra in re.findall(r"[a-z0-9]+", sin_tildes) if len(palabra) > 3}
+
+
+def preguntar_demo(documento_titulo: str, documento_contenido: str, pregunta: str, idioma: str = "Español") -> dict:
+    """Misma firma que nuevamente.preguntas.preguntar: busca la pregunta en los parrafos del documento."""
+    from nuevamente.preguntas import validar_pregunta
+
+    pregunta = validar_pregunta(pregunta)
+    parrafos = [p.strip() for p in re.split(r"\n\s*\n", documento_contenido) if p.strip()] or [documento_contenido]
+    buscadas = _palabras(pregunta)
+    puntajes = sorted(((len(buscadas & _palabras(p)), i) for i, p in enumerate(parrafos)), reverse=True)
+    usados = [i for puntaje, i in puntajes[:2] if puntaje > 0]
+    if not usados:
+        return {"respuesta": "No encontré eso en el documento. Prueba con otras palabras.", "en_documento": False, "fuentes": []}
+    total = len(parrafos)
+    frase = re.split(r"(?<=[.!?])\s+", parrafos[usados[0]])[0]
+    return {
+        "respuesta": f"Según el documento: {frase} (Modo demo: la IA real redacta la respuesta completa.)",
+        "en_documento": True,
+        "fuentes": [{"texto": parrafos[i][:600], "fuente": f"{documento_titulo} · fragmento {i + 1} de {total}"} for i in usados],
+    }
+
+
 def _ejecutar_app():
-    st.set_page_config(layout="wide")
+    configurar_pagina("NuevaMente (demo)")
+    iniciar_estado(st.session_state)
 
-    if "resultado" not in st.session_state:
-        st.session_state.resultado = None
-    if "ultimo_id" not in st.session_state:
-        st.session_state.ultimo_id = None
-    if "error" not in st.session_state:
-        st.session_state.error = None
+    valor = render_ui(
+        opciones=OPCIONES,
+        resultado=st.session_state.resultado,
+        error=st.session_state.error,
+        historial=st.session_state.historial,
+        conversaciones=st.session_state.conversaciones,
+        valoraciones=st.session_state.valoraciones,
+    )
 
-    valor = render_ui(opciones=opciones, resultado=st.session_state.resultado, error=st.session_state.error)
+    manejar_cambio_de_tema(valor)
 
-    if valor and valor.get("accion") == "generar" and valor.get("id") != st.session_state.ultimo_id:
-        st.session_state.ultimo_id = valor["id"]
-        try:
-            contenido_bytes = base64.b64decode(valor["archivo_base64"])
-            contenido_texto = leer_documento(valor["archivo_nombre"], contenido_bytes)
-            if not contenido_texto.strip():
-                raise ValueError("No se pudo extraer texto del documento. Si es un PDF escaneado, prueba con uno que tenga texto seleccionable.")
-            respuesta = _respuesta_de_ejemplo(valor)
-            st.session_state.resultado = {**respuesta.model_dump(), "id_solicitud": valor["id"]}
-            st.session_state.error = None
-        except Exception as exc:  # noqa: BLE001
-            st.session_state.error = {"mensaje": str(exc), "id": valor["id"]}
+    if ejecutar_accion(valor, st.session_state, procesar=procesar_demo, preguntar=preguntar_demo):
         st.rerun()
 
 

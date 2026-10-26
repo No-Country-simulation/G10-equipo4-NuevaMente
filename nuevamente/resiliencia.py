@@ -17,7 +17,7 @@ def es_limite_de_cuota(exc: BaseException) -> bool:
     return any(palabra in texto for palabra in PALABRAS_CUOTA)
 
 
-def invocar_con_espera(llm, prompt, esperas: tuple[int, ...] | None = None):
+def invocar_con_espera(llm, prompt, esperas: tuple[int, ...] | None = None, *, intentos: int = 3):
     """Invoca al LLM (con los 3 reintentos rapidos de LangChain). Si falla por cuota
     (429 / RESOURCE_EXHAUSTED), espera y vuelve a intentar segun `esperas`; cualquier
     otro error, o agotar las esperas, se propaga tal cual."""
@@ -25,7 +25,7 @@ def invocar_con_espera(llm, prompt, esperas: tuple[int, ...] | None = None):
     intento = 0
     while True:
         try:
-            return llm.with_retry(stop_after_attempt=3).invoke(prompt)
+            return llm.with_retry(stop_after_attempt=intentos).invoke(prompt)
         except Exception as exc:
             if not es_limite_de_cuota(exc) or intento >= len(esperas):
                 raise

@@ -1,11 +1,16 @@
-﻿pydantic>=2
-streamlit
-pytest
-ruff
-langchain
-langgraph
-langchain-google-genai
-chromadb
-pypdf
-oci
-langchain-ollama
+# Versiones fijas: son las que pasan ruff y las 240 pruebas en Python 3.11.
+# Asi una actualizacion de alguna libreria no rompe el CI ni el sitio desplegado.
+# Para actualizar: subir la version, correr `ruff check .` y `pytest`, y luego hacer commit.
+pydantic==2.14.1
+streamlit==1.66.1
+pytest==9.1.1
+ruff==0.17.2
+langchain==1.4.7
+langgraph==1.2.17
+langchain-google-genai==4.4.2
+chromadb==1.5.9
+pypdf==6.21.2
+langchain-ollama==1.1.0
+supabase==2.33.0
+python-dotenv==1.2.4
+httpx[socks]==0.28.1

@@ -1,0 +1,15 @@
+[client]
+# Oculta el boton "Deploy" y el menu de desarrollo para que no tapen la cabecera con el logo
+toolbarMode = "minimal"
+
+[browser]
+# Sin estadisticas de uso hacia Streamlit: la app no envia datos de los usuarios a terceros
+gatherUsageStats = false
+
+# El modo principal es el claro, aunque el sistema este en oscuro. El modo oscuro se activa
+# con el boton de la cabecera de la app (ver configurar_pagina en app/componente.py).
+[theme]
+base = "light"
+backgroundColor = "#F4F7FC"
+primaryColor = "#0B57D0"
+textColor = "#111827"
