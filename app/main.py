@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -7,74 +7,86 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-import base64
+import hashlib
+import json
 import logging
+import re
+import time
+import unicodedata
 
 import streamlit as st
-from componente import render_ui
+from componente import OPCIONES, configurar_pagina, manejar_cambio_de_tema, render_ui
+from flujo import ejecutar_accion, iniciar_estado
 
-from nuevamente.contratos import Solicitud, procesar
-from nuevamente.errores import describir_error
-from nuevamente.ingesta import leer_documento
+from nuevamente.contratos import procesar
+from nuevamente.preguntas import preguntar
 
-st.set_page_config(layout="wide")
+logger = logging.getLogger(__name__)
 
-# Ajustar el estilo para que el iframe del componente ocupe todo el ancho y no haya padding
-st.markdown(
-    """
-    <style>
-    .block-container {
-        padding: 0 !important;
-        max-width: 100% !important;
-    }
-    iframe {
-        width: 100% !important;
-        border: none !important;
-    }
-    header[data-testid="stHeader"] {
-        background: transparent;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-opciones = {
-    "perfiles": ["Principiante", "Junior", "Lider Tecnico", "Ejecutivo"],
-    "formatos": ["Flashcards", "Tutorial", "Quiz", "TLDR", "Guion"],
-    "nichos": ["General", "Fintech", "Salud", "E-commerce"],
-    "niveles": ["Didactico", "Intermedio", "Profundo"],
+TIPOS_MIME = {"pdf": "application/pdf", "txt": "text/plain", "md": "text/markdown"}
+MENSAJES_ESPERA = {
+    "generar": "Generando contenido...",
+    "ruta": "Preparando tu ruta de estudio (3 materiales)...",
+    "comparar": "Generando las dos versiones para comparar...",
+    "preguntar": "Buscando la respuesta en el documento...",
 }
 
-if "resultado" not in st.session_state:
-    st.session_state.resultado = None
-if "ultimo_id" not in st.session_state:
-    st.session_state.ultimo_id = None
-if "error" not in st.session_state:
-    st.session_state.error = None
 
-valor = render_ui(opciones=opciones, resultado=st.session_state.resultado, error=st.session_state.error)
+def _nombre_seguro(nombre_archivo: str, contenido: bytes) -> str:
+    """Nombre valido para Supabase Storage. El prefijo con la huella del contenido evita que
+    dos archivos distintos con el mismo nombre se sobrescriban entre si."""
+    ascii_ = unicodedata.normalize("NFKD", nombre_archivo).encode("ascii", "ignore").decode("ascii")
+    limpio = re.sub(r"[^a-zA-Z0-9._-]", "-", ascii_).strip("-.") or "documento"
+    return f"{hashlib.sha256(contenido).hexdigest()[:12]}-{limpio}"
 
-if valor and valor.get("accion") == "generar" and valor.get("id") != st.session_state.ultimo_id:
-    st.session_state.ultimo_id = valor["id"]
+
+def _guardar_original(nombre_archivo: str, contenido: bytes) -> None:
+    """Guarda el documento subido en Supabase. Es opcional: si falla, la generacion sigue."""
     try:
-        contenido_bytes = base64.b64decode(valor["archivo_base64"])
-        contenido_texto = leer_documento(valor["archivo_nombre"], contenido_bytes)
-        if not contenido_texto.strip():
-            raise ValueError("No se pudo extraer texto del documento. Si es un PDF escaneado, prueba con uno que tenga texto seleccionable.")
-        solicitud = Solicitud(
-            documento_titulo=valor["archivo_nombre"],
-            documento_contenido=contenido_texto,
-            perfil_destinatario=valor["perfil"],
-            formato_salida=valor["formato"],
-            nicho_sector=valor["nicho"],
-            nivel_detalle=valor["nivel"],
+        from nuevamente.almacenamiento import guardar
+
+        extension = nombre_archivo.lower().rsplit(".", 1)[-1]
+        guardar(
+            f"subidos_usuario/{_nombre_seguro(nombre_archivo, contenido)}",
+            contenido,
+            TIPOS_MIME.get(extension, "application/octet-stream"),
         )
-        with st.spinner("Generando contenido..."):
-            respuesta = procesar(solicitud, usar_cache=not valor.get("regenerar", False))
-        st.session_state.resultado = {**respuesta.model_dump(), "id_solicitud": valor["id"]}
-        st.session_state.error = None
-    except Exception as exc:
-        logging.getLogger(__name__).exception("Fallo al generar contenido")
-        st.session_state.error = {**describir_error(exc), "id": valor["id"]}
+    except Exception:  # el almacenamiento nunca debe impedir generar
+        logger.warning("No se pudo guardar el documento original en Supabase", exc_info=True)
+
+
+def _registrar_valoracion(datos: dict) -> None:
+    """Guarda el 👍/👎 (sin datos personales) para saber que generaciones sirven."""
+    logger.info("Valoracion recibida: %s", datos)
+    from nuevamente.almacenamiento import guardar
+
+    clave = f"valoraciones/{time.strftime('%Y%m%d-%H%M%S')}-{datos['id_material']}.json"
+    guardar(clave, json.dumps(datos, ensure_ascii=False).encode("utf-8"))
+
+
+configurar_pagina()
+iniciar_estado(st.session_state)
+
+valor = render_ui(
+    opciones=OPCIONES,
+    resultado=st.session_state.resultado,
+    error=st.session_state.error,
+    historial=st.session_state.historial,
+    conversaciones=st.session_state.conversaciones,
+    valoraciones=st.session_state.valoraciones,
+)
+
+manejar_cambio_de_tema(valor)
+
+accion = valor.get("accion") if isinstance(valor, dict) else None
+with st.spinner(MENSAJES_ESPERA.get(accion, "Procesando...")):
+    hubo_cambios = ejecutar_accion(
+        valor,
+        st.session_state,
+        procesar=procesar,
+        preguntar=preguntar,
+        guardar_original=_guardar_original,
+        registrar_valoracion=_registrar_valoracion,
+    )
+if hubo_cambios:
     st.rerun()

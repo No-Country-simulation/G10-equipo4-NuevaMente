@@ -1,5 +1,6 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
+import hashlib
 import math
 
 import chromadb
@@ -36,12 +37,33 @@ def indexar(doc_id: str, texto: str) -> int:
     coleccion = _coleccion(doc_id)
     fragmentos = _dividir_en_chunks(texto)
     total = len(fragmentos)
+    if total == 0:
+        raise ValueError("El documento no tiene texto para procesar.")
     coleccion.upsert(
         ids=[f"{doc_id}-{i}" for i in range(total)],
         documents=fragmentos,
         metadatas=[{"posicion": i, "total_fragmentos": total} for i in range(total)],
     )
+    # Si antes se indexo un documento con el mismo nombre pero mas largo, sus fragmentos
+    # sobrantes seguirian en la coleccion y se mezclarian con el documento nuevo.
+    coleccion.delete(where={"posicion": {"$gte": total}})
+    # La huella permite saber despues si la coleccion ya tiene exactamente este texto
+    coleccion.modify(metadata={"huella": _huella(texto)})
     return total
+
+
+def _huella(texto: str) -> str:
+    return hashlib.sha256(texto.encode("utf-8")).hexdigest()
+
+
+def asegurar_indice(doc_id: str, texto: str) -> bool:
+    """Indexa el documento solo si la coleccion no tiene ya ese mismo texto.
+    Devuelve True si tuvo que indexar (evita recalcular embeddings en cada pregunta)."""
+    metadatos = _coleccion(doc_id).metadata or {}
+    if metadatos.get("huella") == _huella(texto):
+        return False
+    indexar(doc_id, texto)
+    return True
 
 
 def _producto_punto(a: list[float], b: list[float]) -> float:

@@ -1,4 +1,4 @@
-﻿from unittest.mock import patch
+from unittest.mock import patch
 
 from nuevamente.agentes import generar
 from nuevamente.contratos import (

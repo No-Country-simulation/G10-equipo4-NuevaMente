@@ -1,11 +1,45 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Google+Sans:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<title>NuevaMente</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="preload" href="fonts/material-symbols-rounded-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/montserrat-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+  // El modo principal es el claro. Solo se pinta oscuro si la persona lo eligio antes con el boton.
+  (function () {
+    var tema = "claro";
+    try { if (localStorage.getItem("nuevamente-tema") === "oscuro") tema = "oscuro"; } catch (e) { /* sin almacenamiento */ }
+    document.documentElement.dataset.tema = tema;
+  })();
+</script>
 <style>
+  /* ---------- Fuentes locales (sin depender de Google Fonts) ---------- */
+  @font-face { font-family: "Montserrat"; font-weight: 400; font-display: swap; src: url("fonts/montserrat-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 500; font-display: swap; src: url("fonts/montserrat-latin-500-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 600; font-display: swap; src: url("fonts/montserrat-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 700; font-display: swap; src: url("fonts/montserrat-latin-700-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 800; font-display: swap; src: url("fonts/montserrat-latin-800-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 900; font-display: swap; src: url("fonts/montserrat-latin-900-normal.woff2") format("woff2"); }
+  @font-face { font-family: "JetBrains Mono"; font-weight: 400; font-display: swap; src: url("fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "JetBrains Mono"; font-weight: 600; font-display: swap; src: url("fonts/jetbrains-mono-latin-600-normal.woff2") format("woff2"); }
+  @font-face {
+    font-family: "Material Symbols Rounded"; font-weight: 400; font-style: normal; font-display: block;
+    src: url("fonts/material-symbols-rounded-latin-400-normal.woff2") format("woff2");
+  }
+
+  /* Los iconos son ligaduras: sin la fuente se veria la palabra ("upload_file").
+     Se reserva un cuadro de 1em y el texto queda invisible hasta que la fuente carga. */
+  .material-symbols-rounded {
+    font-family: "Material Symbols Rounded"; font-weight: normal; font-style: normal; font-size: 24px;
+    line-height: 1; letter-spacing: normal; text-transform: none; white-space: nowrap; direction: ltr;
+    display: inline-block; width: 1em; height: 1em; overflow: hidden; vertical-align: middle;
+    font-feature-settings: "liga"; -webkit-font-feature-settings: "liga"; -webkit-font-smoothing: antialiased;
+  }
+  html:not(.iconos-listos) .material-symbols-rounded { color: transparent !important; }
+
   :root {
     --color-primario: #0B57D0;
     --color-on-primario: #FFFFFF;
@@ -13,6 +47,7 @@
     --color-on-primario-container: #041E49;
     --color-secundario-container: #C2E7FF;
     --color-acento: #FEF08A;
+    --color-marca: #C8F31D; /* lima del isotipo */
     --color-exito: #BBF7D0;
     --color-on-exito: #14532D;
     --color-error: #FECACA;
@@ -21,10 +56,44 @@
     --color-on-superficie: #111827;
     --color-on-superficie-variante: #4B5563;
     --color-contorno: #111827;
-    --sombra-sm: 4px 4px 0px var(--color-contorno);
-    --sombra-md: 6px 6px 0px var(--color-contorno);
+    --color-sombra: #111827;
+    --color-tarjeta: #FFFFFF;
+    --color-tarjeta-velo: rgba(255, 255, 255, 0.95);
+    --color-tinta: #111827;          /* texto sobre lima / amarillo: siempre oscuro */
+    --color-logro-suave: #F4FDD0;    /* fondo de pasos y tarjetas ya dominados */
+    --color-codigo-fondo: #111827;
+    --color-texto-sobre-solido: #FFFFFF;
+    --sombra-sm: 4px 4px 0px var(--color-sombra);
+    --sombra-md: 6px 6px 0px var(--color-sombra);
+    --fuente-titulos: "Montserrat", system-ui, sans-serif;
     --mouse-x: 0;
     --mouse-y: 0;
+    color-scheme: light;
+  }
+
+  /* Modo oscuro: mismos bordes gruesos y sombras duras, ahora con contornos claros y sombras lima */
+  :root[data-tema="oscuro"] {
+    --color-primario: #4C8DF6;
+    --color-on-primario: #0B1220;
+    --color-primario-container: #1B2B4D;
+    --color-on-primario-container: #D3E3FD;
+    --color-secundario-container: #12324A;
+    --color-acento: #4A4214;
+    --color-exito: #173A24;
+    --color-on-exito: #BBF7D0;
+    --color-error: #4A1A1A;
+    --color-on-error: #FECACA;
+    --color-superficie: #0E1117;
+    --color-on-superficie: #F3F4F6;
+    --color-on-superficie-variante: #A8B0BD;
+    --color-contorno: #E5E7EB;
+    --color-sombra: #C8F31D;
+    --color-tarjeta: #171B24;
+    --color-tarjeta-velo: rgba(23, 27, 36, 0.96);
+    --color-logro-suave: #26300C;
+    --color-codigo-fondo: #05070A;
+    --color-texto-sobre-solido: #0B1220;
+    color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
@@ -40,7 +109,7 @@
     line-height: 1.5;
   }
 
-  h1, h2, h3 { font-family: 'Google Sans', 'Montserrat', sans-serif; margin: 0; line-height: 1.25; }
+  h1, h2, h3 { font-family: var(--fuente-titulos); font-weight: 800; margin: 0; line-height: 1.25; }
   p { margin: 0; }
   code {
     font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.88em;
@@ -64,10 +133,52 @@
     transition: translate 0.4s ease-out;
   }
 
-  .blob-1 { width: 220px; height: 220px; background: var(--color-acento); top: -60px; left: -60px; --parallax: -40px; }
+  .blob-1 { width: 220px; height: 220px; background: var(--color-marca); top: -60px; left: -60px; --parallax: -40px; }
   .blob-2 { width: 180px; height: 180px; background: var(--color-secundario-container); bottom: -50px; right: -40px; --parallax: 60px; }
 
   .contenedor-principal { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* ---------- Cabecera de marca ---------- */
+
+  .cabecera-marca {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 12px 16px; margin-bottom: 22px;
+  }
+  .marca { display: flex; align-items: center; gap: 14px; margin: 0; min-width: 0; }
+  .marca-isotipo {
+    width: 56px; height: 56px; flex-shrink: 0; display: block;
+    border: 3px solid var(--color-contorno); border-radius: 15px; box-shadow: var(--sombra-sm);
+    background: var(--color-marca);
+  }
+  .marca-logo { display: block; height: 34px; width: auto; max-width: 100%; color: var(--color-on-superficie); }
+  .marca-lema {
+    margin-left: auto; padding: 6px 14px; border: 2px solid var(--color-contorno); border-radius: 9999px;
+    background: var(--color-tarjeta); font-size: 0.82rem; font-weight: 700; color: var(--color-on-superficie);
+  }
+  .boton-tema {
+    display: inline-flex; align-items: center; gap: 8px; padding: 5px 6px 5px 12px;
+    border: 2px solid var(--color-contorno); border-radius: 9999px; background: var(--color-tarjeta);
+    color: var(--color-on-superficie); font-size: 0.82rem; font-weight: 700; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .boton-tema:hover { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
+  .boton-tema .material-symbols-rounded { font-size: 18px; }
+  .interruptor {
+    position: relative; width: 40px; height: 22px; flex-shrink: 0;
+    border: 2px solid var(--color-contorno); border-radius: 9999px; background: var(--color-superficie);
+    transition: background 0.2s;
+  }
+  .interruptor::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--color-contorno); transition: transform 0.2s;
+  }
+  .boton-tema[aria-checked="true"] .interruptor { background: var(--color-marca); }
+  .boton-tema[aria-checked="true"] .interruptor::after { transform: translateX(18px); background: var(--color-tinta); }
+  .contador-pestaña {
+    display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px;
+    border: 2px solid var(--color-contorno); border-radius: 9999px; background: var(--color-marca);
+    color: var(--color-tinta); font-size: 0.75rem; font-weight: 900;
+  }
+  .contador-pestaña[hidden] { display: none; }
 
   /* ---------- Pestañas ---------- */
 
@@ -75,7 +186,7 @@
   .pestaña {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 12px 20px; border: 3px solid var(--color-contorno); border-radius: 9999px;
-    background: #FFFFFF; color: var(--color-on-superficie); font-weight: 800;
+    background: var(--color-tarjeta); color: var(--color-on-superficie); font-weight: 800;
     cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
   }
   .pestaña:hover { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
@@ -89,7 +200,7 @@
   /* ---------- Formulario ---------- */
 
   .tarjeta-formulario {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-tarjeta-velo);
     border: 3px solid var(--color-contorno);
     box-shadow: var(--sombra-md);
     border-radius: 24px 8px 24px 24px;
@@ -110,7 +221,7 @@
   }
   .zona-drop.sobre-zona, .zona-drop:hover { background: var(--color-primario-container); }
   .zona-drop.con-archivo { border-style: solid; background: var(--color-secundario-container); color: var(--color-on-primario-container); }
-  .zona-drop .material-symbols-rounded { font-size: 40px; display: block; margin-bottom: 8px; }
+  .zona-drop .material-symbols-rounded { font-size: 40px; display: block; margin: 0 auto 8px; }
   .zona-drop p { word-break: break-word; }
 
   .etiqueta-campo {
@@ -118,15 +229,15 @@
     margin-bottom: 6px; color: var(--color-primario);
   }
 
-  .bloque-formato { margin-top: 24px; border: 0; padding: 0; margin-inline: 0; min-width: 0; }
-  .bloque-formato legend { padding: 0; margin-bottom: 8px; }
+  .bloque-formato { margin-top: 0; border: 0; padding: 0; margin-inline: 0; min-width: 0; }
+  .bloque-formato legend { padding: 0; margin-bottom: 10px; }
   .selector-formato { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
   .opcion-formato { position: relative; }
   .opcion-formato input { position: absolute; opacity: 0; pointer-events: none; }
   .opcion-formato label {
     display: flex; flex-direction: column; gap: 4px; height: 100%;
     padding: 12px 14px; border: 2px solid var(--color-contorno); border-radius: 12px;
-    background: #FFFFFF; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    background: var(--color-tarjeta); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
   }
   .opcion-formato label:hover { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
   .opcion-formato .nombre-formato { display: flex; align-items: center; gap: 6px; font-weight: 800; }
@@ -137,10 +248,10 @@
   .opcion-formato input:checked + label .desc-formato { color: var(--color-primario-container); }
   .opcion-formato input:focus-visible + label { outline: 3px solid var(--color-primario); outline-offset: 3px; }
 
-  .fila-selects { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-top: 20px; }
+  .fila-selects { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
   .fila-selects select {
     width: 100%; padding: 10px 12px; border: 2px solid var(--color-contorno); border-radius: 8px;
-    font-family: 'Montserrat', sans-serif; font-weight: 600; background: #FFFFFF; color: var(--color-on-superficie);
+    font-family: 'Montserrat', sans-serif; font-weight: 600; background: var(--color-tarjeta); color: var(--color-on-superficie);
   }
 
   .boton-primario {
@@ -158,7 +269,7 @@
   .boton-secundario {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 8px 16px; border-radius: 9999px; border: 2px solid var(--color-contorno);
-    background: #FFFFFF; color: var(--color-on-superficie); font-weight: 700; font-size: 0.85rem;
+    background: var(--color-tarjeta); color: var(--color-on-superficie); font-weight: 700; font-size: 0.85rem;
     cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
   }
   .boton-secundario:hover { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
@@ -179,7 +290,7 @@
   /* ---------- Resultado: estructura comun ---------- */
 
   .tarjeta-resultado {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-tarjeta-velo);
     border: 3px solid var(--color-contorno);
     box-shadow: var(--sombra-md);
     border-radius: 8px 24px 24px 24px;
@@ -197,20 +308,21 @@
   .animacion-agentes { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
   .agente-paso {
     display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 96px; padding: 12px 14px;
-    border: 3px solid var(--color-contorno); border-radius: 12px; background: #FFFFFF; opacity: 0.55;
+    border: 3px solid var(--color-contorno); border-radius: 12px; background: var(--color-tarjeta); opacity: 0.55;
     font-weight: 800; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.4px;
     transition: opacity 0.3s, background 0.3s, box-shadow 0.3s;
   }
   .agente-paso .material-symbols-rounded { font-size: 28px; }
   .agente-paso.activo { opacity: 1; background: var(--color-acento); box-shadow: var(--sombra-sm); animation: saltito 1s ease-in-out infinite; }
-  .agente-paso.hecho { opacity: 1; background: var(--color-exito); color: var(--color-on-exito); }
+  .agente-paso.hecho { opacity: 1; background: var(--color-marca); color: var(--color-tinta); }
   .conector-agentes { width: 28px; border-top: 3px dashed var(--color-contorno); }
-  .barra-carga { width: 100%; height: 14px; border: 3px solid var(--color-contorno); border-radius: 9999px; overflow: hidden; background: #FFFFFF; }
+  .barra-carga { width: 100%; height: 14px; border: 3px solid var(--color-contorno); border-radius: 9999px; overflow: hidden; background: var(--color-tarjeta); }
   .barra-carga span { display: block; width: 40%; height: 100%; background: var(--color-primario); animation: deslizar 1.4s ease-in-out infinite; }
   @keyframes saltito { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @keyframes deslizar { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
   @media (prefers-reduced-motion: reduce) {
     .agente-paso.activo, .barra-carga span { animation: none; }
+    .marca-cargando path { animation: none; stroke-dashoffset: 0; fill-opacity: 1; }
   }
 
   .aviso details { margin-top: 8px; font-size: 0.8rem; }
@@ -235,14 +347,14 @@
   .chip {
     display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
     padding: 4px 12px; border: 2px solid var(--color-contorno); border-radius: 9999px;
-    background: #FFFFFF; font-size: 0.8rem; font-weight: 700;
+    background: var(--color-tarjeta); font-size: 0.8rem; font-weight: 700;
   }
   .chip .material-symbols-rounded { font-size: 18px; }
   .chip-texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .chip.nivel-alta { background: var(--color-exito); color: var(--color-on-exito); }
   .chip.nivel-media { background: var(--color-acento); }
   .chip.nivel-baja { background: var(--color-error); color: var(--color-on-error); }
-  .medidor { width: 48px; height: 8px; border: 2px solid var(--color-contorno); border-radius: 9999px; overflow: hidden; background: #FFFFFF; }
+  .medidor { width: 48px; height: 8px; border: 2px solid var(--color-contorno); border-radius: 9999px; overflow: hidden; background: var(--color-tarjeta); }
   .medidor span { display: block; height: 100%; background: var(--color-contorno); }
 
   .nota-critico {
@@ -280,7 +392,7 @@
     border: 3px solid var(--color-contorno); border-radius: 16px 4px 16px 16px;
     background: var(--color-secundario-container); box-shadow: var(--sombra-sm); font-weight: 500;
   }
-  .bloque-cierre strong { display: block; font-family: 'Google Sans', 'Montserrat', sans-serif; margin-bottom: 2px; }
+  .bloque-cierre strong { display: block; font-family: var(--fuente-titulos); margin-bottom: 2px; }
 
   .estado-vacio { text-align: center; padding: 24px; color: var(--color-on-superficie-variante); font-weight: 600; }
 
@@ -302,7 +414,7 @@
   }
   .flashcard-frente .numero-tarjeta { font-size: 0.8rem; font-weight: 800; opacity: 0.7; }
   .flashcard-frente .icono-voltear { align-self: flex-end; opacity: 0.6; }
-  .flashcard-dorso { background: #FFFFFF; transform: rotateY(180deg); font-size: 0.9rem; font-weight: 500; }
+  .flashcard-dorso { background: var(--color-tarjeta); transform: rotateY(180deg); font-size: 0.9rem; font-weight: 500; }
   .flashcard-dorso .pista-tarjeta {
     display: flex; gap: 6px; margin-top: auto; padding-top: 10px; border-top: 2px dashed var(--color-contorno);
     font-size: 0.82rem; font-style: italic; color: var(--color-on-superficie-variante);
@@ -319,7 +431,7 @@
 
   .progreso { margin: 24px 0 8px; }
   .texto-progreso { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; }
-  .barra-progreso { height: 14px; border: 2px solid var(--color-contorno); border-radius: 9999px; background: #FFFFFF; overflow: hidden; }
+  .barra-progreso { height: 14px; border: 2px solid var(--color-contorno); border-radius: 9999px; background: var(--color-tarjeta); overflow: hidden; }
   .barra-progreso span { display: block; height: 100%; width: 0; background: var(--color-primario); transition: width 0.3s; }
 
   .lista-pasos { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 0; }
@@ -329,21 +441,21 @@
   }
   .numero-paso {
     width: 48px; height: 48px; display: grid; place-items: center;
-    border: 3px solid var(--color-contorno); border-radius: 50%; background: #FFFFFF;
-    font-family: 'Google Sans', 'Montserrat', sans-serif; font-weight: 700; font-size: 1.2rem; box-shadow: var(--sombra-sm);
+    border: 3px solid var(--color-contorno); border-radius: 50%; background: var(--color-tarjeta);
+    font-family: var(--fuente-titulos); font-weight: 700; font-size: 1.2rem; box-shadow: var(--sombra-sm);
   }
-  .paso-tutorial.completado .numero-paso { background: var(--color-exito); }
+  .paso-tutorial.completado .numero-paso { background: var(--color-marca); color: var(--color-tinta); }
   .cuerpo-paso {
     min-width: 0; padding: 16px 18px; border: 3px solid var(--color-contorno); border-radius: 8px 16px 16px 16px;
-    background: #FFFFFF; display: grid; gap: 12px;
+    background: var(--color-tarjeta); display: grid; gap: 12px;
   }
-  .paso-tutorial.completado .cuerpo-paso { background: #F0FDF4; }
+  .paso-tutorial.completado .cuerpo-paso { background: var(--color-logro-suave); }
   .cuerpo-paso h3 { font-size: 1.1rem; word-break: break-word; }
   .cuerpo-paso > p { max-width: 72ch; }
 
   .bloque-codigo {
     margin: 0; padding: 14px 16px; border: 2px solid var(--color-contorno); border-radius: 10px;
-    background: var(--color-on-superficie); color: #E5E7EB; overflow-x: auto; max-width: 100%;
+    background: var(--color-codigo-fondo); color: #E5E7EB; overflow-x: auto; max-width: 100%;
     font-family: 'JetBrains Mono', Consolas, monospace; font-size: 0.85rem; line-height: 1.55; white-space: pre;
   }
   .bloque-codigo code { background: none; border: 0; padding: 0; color: inherit; font-size: inherit; word-break: normal; }
@@ -373,7 +485,7 @@
   .opcion-quiz {
     display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
     padding: 12px 16px; border: 3px solid var(--color-contorno); border-radius: 12px;
-    background: #FFFFFF; color: var(--color-on-superficie); font-size: 0.95rem; font-weight: 600;
+    background: var(--color-tarjeta); color: var(--color-on-superficie); font-size: 0.95rem; font-weight: 600;
     cursor: pointer; transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
   }
   .opcion-quiz:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
@@ -387,9 +499,9 @@
   .opcion-quiz.seleccionada .letra-opcion { background: var(--color-primario); color: var(--color-on-primario); }
   .opcion-quiz:disabled { cursor: default; }
   .opcion-quiz.correcta { background: var(--color-exito); color: var(--color-on-exito); box-shadow: var(--sombra-sm); }
-  .opcion-quiz.correcta .letra-opcion { background: var(--color-on-exito); color: #FFFFFF; }
+  .opcion-quiz.correcta .letra-opcion { background: var(--color-on-exito); color: var(--color-tarjeta); }
   .opcion-quiz.incorrecta { background: var(--color-error); color: var(--color-on-error); }
-  .opcion-quiz.incorrecta .letra-opcion { background: var(--color-on-error); color: #FFFFFF; }
+  .opcion-quiz.incorrecta .letra-opcion { background: var(--color-on-error); color: var(--color-tarjeta); }
   .opcion-quiz.incorrecta .texto-opcion { text-decoration: line-through; }
   .opcion-quiz.atenuada { opacity: 0.5; }
 
@@ -403,14 +515,14 @@
   }
   .retro-quiz.acierto { background: var(--color-exito); color: var(--color-on-exito); }
   .retro-quiz.fallo { background: var(--color-error); color: var(--color-on-error); }
-  .retro-quiz .veredicto { display: flex; align-items: center; gap: 8px; font-family: 'Google Sans', 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; }
+  .retro-quiz .veredicto { display: flex; align-items: center; gap: 8px; font-family: var(--fuente-titulos); font-size: 1.1rem; font-weight: 700; }
 
   .acciones-quiz { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
   .acciones-quiz .boton-primario { margin-top: 0; }
   .atajos { font-size: 0.78rem; color: var(--color-on-superficie-variante); font-weight: 500; }
   .atajos kbd {
     font-family: 'Montserrat', sans-serif; font-weight: 700; padding: 0 6px;
-    border: 2px solid var(--color-contorno); border-radius: 4px; background: #FFFFFF;
+    border: 2px solid var(--color-contorno); border-radius: 4px; background: var(--color-tarjeta);
   }
 
   .resultado-quiz { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
@@ -419,9 +531,9 @@
     border: 4px solid var(--color-contorno); border-radius: 40% 60% 55% 45% / 45% 50% 50% 55%;
     box-shadow: var(--sombra-md); background: var(--color-acento);
   }
-  .puntaje-quiz.nivel-alta { background: var(--color-exito); }
+  .puntaje-quiz.nivel-alta { background: var(--color-marca); color: var(--color-tinta); }
   .puntaje-quiz.nivel-baja { background: var(--color-error); }
-  .puntaje-quiz .cifra { font-family: 'Google Sans', 'Montserrat', sans-serif; font-size: 2.4rem; font-weight: 700; line-height: 1; }
+  .puntaje-quiz .cifra { font-family: var(--fuente-titulos); font-size: 2.4rem; font-weight: 700; line-height: 1; }
   .puntaje-quiz .porcentaje { font-weight: 800; font-size: 0.9rem; }
   .mensaje-quiz h3 { font-size: 1.4rem; }
   .mensaje-quiz p { margin-top: 6px; color: var(--color-on-superficie-variante); font-weight: 500; }
@@ -429,11 +541,11 @@
   .revision-quiz { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 12px; }
   .item-revision {
     display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 14px 16px;
-    border: 2px solid var(--color-contorno); border-radius: 12px; background: #FFFFFF;
+    border: 2px solid var(--color-contorno); border-radius: 12px; background: var(--color-tarjeta);
   }
   .item-revision > .material-symbols-rounded { font-size: 26px; }
-  .item-revision.acierto > .material-symbols-rounded { color: #15803D; }
-  .item-revision.fallo > .material-symbols-rounded { color: #B91C1C; }
+  .item-revision.acierto > .material-symbols-rounded { color: var(--color-on-exito); }
+  .item-revision.fallo > .material-symbols-rounded { color: var(--color-on-error); }
   .item-revision h4 { margin: 0 0 6px; font-size: 0.95rem; word-break: break-word; }
   .item-revision p { font-size: 0.85rem; font-weight: 500; word-break: break-word; }
   .item-revision .explicacion-revision { margin-top: 6px; color: var(--color-on-superficie-variante); }
@@ -443,7 +555,7 @@
   .resumen-destacado {
     display: flex; gap: 14px; align-items: flex-start; padding: 22px 24px;
     border: 4px solid var(--color-contorno); border-radius: 24px 8px 24px 24px; box-shadow: var(--sombra-md);
-    background: var(--color-acento); font-family: 'Google Sans', 'Montserrat', sans-serif;
+    background: var(--color-acento); font-family: var(--fuente-titulos);
     font-size: 1.35rem; font-weight: 700; line-height: 1.35;
   }
   .resumen-destacado .material-symbols-rounded { font-size: 36px; }
@@ -451,7 +563,7 @@
   .grid-puntos { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 28px; }
   .punto-clave {
     padding: 16px 18px; border: 3px solid var(--color-contorno); border-radius: 8px 16px 16px 16px;
-    background: #FFFFFF; box-shadow: var(--sombra-sm); display: grid; gap: 6px; align-content: start;
+    background: var(--color-tarjeta); box-shadow: var(--sombra-sm); display: grid; gap: 6px; align-content: start;
   }
   .punto-clave h3 { font-size: 1.02rem; word-break: break-word; }
   .punto-clave p { font-size: 0.9rem; font-weight: 500; color: var(--color-on-superficie-variante); word-break: break-word; }
@@ -461,7 +573,7 @@
 
   .linea-tiempo { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
   .escena {
-    border: 3px solid var(--color-contorno); border-radius: 8px 16px 16px 16px; background: #FFFFFF;
+    border: 3px solid var(--color-contorno); border-radius: 8px 16px 16px 16px; background: var(--color-tarjeta);
     box-shadow: var(--sombra-sm); overflow: hidden;
   }
   .cabecera-escena {
@@ -471,7 +583,7 @@
   .cabecera-escena h3 { font-size: 1.02rem; flex: 1; min-width: 180px; word-break: break-word; }
   .marca-tiempo {
     display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px;
-    border: 2px solid var(--color-contorno); border-radius: 9999px; background: #FFFFFF; font-weight: 800; font-size: 0.8rem;
+    border: 2px solid var(--color-contorno); border-radius: 9999px; background: var(--color-tarjeta); font-weight: 800; font-size: 0.8rem;
     font-variant-numeric: tabular-nums;
   }
   .marca-tiempo .material-symbols-rounded { font-size: 16px; }
@@ -487,6 +599,260 @@
   .modo-narracion .columnas-escena { grid-template-columns: 1fr; }
   .modo-narracion .apoyo-visual { display: none; }
   .modo-narracion .narracion p { font-size: 1.2rem; }
+
+
+  /* ---------- Pasos del formulario ---------- */
+
+  .paso-form { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 1rem; }
+  .paso-form .texto-paso { font-weight: 800; }
+  .numero-form {
+    width: 32px; height: 32px; flex-shrink: 0; display: grid; place-items: center;
+    border: 3px solid var(--color-contorno); border-radius: 50%; background: var(--color-tarjeta);
+    font-weight: 900; font-size: 0.9rem; box-shadow: 2px 2px 0 var(--color-sombra);
+    transition: background 0.2s;
+  }
+  .numero-form .material-symbols-rounded { font-size: 20px; }
+  .paso-form.hecho .numero-form { background: var(--color-marca); color: var(--color-tinta); }
+  .seccion-form + .seccion-form { margin-top: 26px; }
+
+  /* ---------- Archivo elegido (chip) ---------- */
+
+  .chip-archivo {
+    display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+    border: 3px solid var(--color-contorno); border-radius: 16px; box-shadow: var(--sombra-sm);
+    background: var(--color-secundario-container);
+  }
+  .chip-archivo[hidden] { display: none; }
+  .tipo-archivo {
+    width: 48px; height: 58px; flex-shrink: 0; display: grid; place-items: center;
+    border: 3px solid var(--color-contorno); border-radius: 6px 16px 6px 6px; background: var(--color-tarjeta);
+    font-weight: 900; font-size: 0.8rem; letter-spacing: 0.5px;
+  }
+  .datos-archivo { flex: 1; min-width: 0; display: grid; gap: 4px; }
+  .nombre-chip { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .peso-chip { font-size: 0.8rem; font-weight: 600; color: var(--color-on-superficie-variante); }
+  .barra-peso { height: 12px; border: 2px solid var(--color-contorno); border-radius: 9999px; background: var(--color-tarjeta); overflow: hidden; }
+  .barra-peso span { display: block; height: 100%; background: var(--color-marca); }
+  .acciones-chip { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* ---------- Estado vacio con la marca ---------- */
+
+  .vacio-marca { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 40px 24px; }
+  .vacio-marca .isotipo-vacio {
+    width: 72px; height: 72px; border: 3px solid var(--color-contorno); border-radius: 18px;
+    box-shadow: var(--sombra-sm); background: var(--color-marca);
+  }
+  .vacio-marca h2 { font-size: 1.35rem; }
+  .vacio-marca p { max-width: 42ch; font-weight: 500; color: var(--color-on-superficie-variante); }
+  .vacio-marca .boton-primario { margin-top: 6px; }
+
+  /* ---------- Carga: la marca se dibuja ---------- */
+
+  .marca-cargando {
+    width: 132px; padding: 14px 16px; border: 3px solid var(--color-contorno); border-radius: 22px;
+    background: var(--color-marca); box-shadow: var(--sombra-sm); align-self: center;
+  }
+  .marca-cargando svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .marca-cargando path {
+    fill: var(--color-tinta); fill-opacity: 0; stroke: var(--color-tinta); stroke-width: 6;
+    stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1;
+    animation: dibujar-marca 2.6s ease-in-out infinite;
+  }
+  @keyframes dibujar-marca {
+    0% { stroke-dashoffset: 1; fill-opacity: 0; }
+    55% { stroke-dashoffset: 0; fill-opacity: 0; }
+    75%, 90% { stroke-dashoffset: 0; fill-opacity: 1; }
+    100% { stroke-dashoffset: 0; fill-opacity: 0; }
+  }
+
+  /* ---------- Logros en lima ---------- */
+
+  .bloque-logro {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 20px; padding: 16px 20px;
+    border: 3px solid var(--color-contorno); border-radius: 4px 16px 16px 16px; box-shadow: var(--sombra-sm);
+    background: var(--color-marca); color: var(--color-tinta); font-weight: 600;
+  }
+  .bloque-logro[hidden] { display: none; }
+  .bloque-logro strong { font-family: var(--fuente-titulos); font-weight: 800; font-size: 1.05rem; display: block; }
+  .bloque-logro .texto-logro { flex: 1; min-width: 200px; }
+  .bloque-logro .boton-secundario { color: var(--color-on-superficie); }
+  .insignia {
+    display: inline-flex; align-items: center; gap: 6px; width: fit-content; margin-top: 10px;
+    padding: 6px 14px; border: 3px solid var(--color-contorno); border-radius: 9999px;
+    background: var(--color-marca); color: var(--color-tinta); font-weight: 800; font-size: 0.85rem;
+    box-shadow: var(--sombra-sm); transform: rotate(-3deg);
+  }
+  .barra-progreso.completa span { background: var(--color-marca); }
+
+  /* ---------- Repaso de flashcards ---------- */
+
+  .resumen-repaso { display: grid; gap: 8px; margin-bottom: 18px; }
+  .texto-repaso { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 0.85rem; font-weight: 800; }
+  .barra-repaso { display: flex; height: 14px; border: 2px solid var(--color-contorno); border-radius: 9999px; background: var(--color-tarjeta); overflow: hidden; }
+  .barra-repaso .dominadas { background: var(--color-marca); transition: width 0.3s; }
+  .barra-repaso .pendientes { background: #FEF08A; transition: width 0.3s; }
+  .tarjeta-repaso { display: grid; gap: 10px; align-content: start; }
+  .acciones-tarjeta { display: flex; gap: 8px; }
+  .acciones-tarjeta[hidden] { display: none; }
+  .acciones-tarjeta .boton-secundario { flex: 1; justify-content: center; }
+  .boton-secundario.lo-se[aria-pressed="true"] { background: var(--color-marca); color: var(--color-tinta); box-shadow: var(--sombra-sm); }
+  .boton-secundario.repasar[aria-pressed="true"] { background: #FEF08A; color: var(--color-tinta); box-shadow: var(--sombra-sm); }
+  .tarjeta-repaso.dominada .flashcard-cara { border-color: var(--color-contorno); box-shadow: 4px 4px 0 var(--color-marca); }
+  .tarjeta-repaso.dominada .flashcard-frente::after {
+    content: "Dominada"; position: absolute; top: 12px; right: 12px; padding: 1px 8px;
+    border: 2px solid var(--color-contorno); border-radius: 9999px; background: var(--color-marca);
+    color: var(--color-tinta); font-size: 0.7rem; font-weight: 800;
+  }
+  .flashcard-frente { position: relative; }
+
+  /* ---------- Mis materiales ---------- */
+
+  .lista-materiales { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+  .material {
+    display: flex; flex-direction: column; gap: 10px; padding: 16px 18px;
+    border: 3px solid var(--color-contorno); border-radius: 8px 16px 16px 16px; background: var(--color-tarjeta);
+    box-shadow: var(--sombra-sm);
+  }
+  .material.abierto { box-shadow: 4px 4px 0 var(--color-marca); }
+  .cabecera-material { display: flex; align-items: center; gap: 10px; }
+  .icono-material {
+    width: 40px; height: 40px; flex-shrink: 0; display: grid; place-items: center;
+    border: 2px solid var(--color-contorno); border-radius: 12px; background: var(--color-primario-container);
+  }
+  .material.abierto .icono-material { background: var(--color-marca); color: var(--color-tinta); }
+  .material h3 { font-size: 1rem; word-break: break-word; }
+  .material .detalle-material { font-size: 0.8rem; font-weight: 600; color: var(--color-on-superficie-variante); }
+  .material .boton-primario, .material .boton-secundario {
+    width: fit-content; margin-top: auto; padding: 8px 18px; font-size: 0.85rem;
+  }
+  .nota-materiales { margin-bottom: 16px; font-size: 0.85rem; font-weight: 600; color: var(--color-on-superficie-variante); }
+
+
+  /* ---------- Mas formas de estudiar (ruta y comparacion) ---------- */
+
+  .mas-formas { margin-top: 26px; padding-top: 20px; border-top: 3px dashed var(--color-contorno); }
+  .titulo-mas-formas { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; margin-bottom: 12px; }
+  .opciones-extra { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .opcion-extra {
+    display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: start; padding: 14px 16px;
+    border: 2px solid var(--color-contorno); border-radius: 8px 16px 16px 16px; background: var(--color-tarjeta);
+  }
+  .icono-extra {
+    width: 40px; height: 40px; display: grid; place-items: center; grid-row: span 2;
+    border: 2px solid var(--color-contorno); border-radius: 12px; background: var(--color-marca); color: var(--color-tinta);
+  }
+  .opcion-extra.comparar .icono-extra { background: var(--color-primario-container); color: var(--color-on-primario-container); }
+  .texto-extra { display: grid; gap: 2px; min-width: 0; }
+  .texto-extra strong { font-family: var(--fuente-titulos); font-weight: 800; }
+  .texto-extra span { font-size: 0.8rem; font-weight: 500; color: var(--color-on-superficie-variante); }
+  .accion-extra { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .accion-extra select {
+    padding: 7px 10px; border: 2px solid var(--color-contorno); border-radius: 9999px; background: var(--color-tarjeta);
+    color: var(--color-on-superficie); font-family: inherit; font-weight: 700; font-size: 0.8rem;
+  }
+  .boton-secundario:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ---------- Ruta de estudio ---------- */
+
+  .pasos-ruta { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .paso-ruta {
+    display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; text-align: left;
+    border: 3px solid var(--color-contorno); border-radius: 8px 16px 16px 16px; background: var(--color-tarjeta);
+    color: var(--color-on-superficie); font-family: inherit; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .paso-ruta:hover { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
+  .paso-ruta .numero-form { box-shadow: none; }
+  .paso-ruta .nombre-paso { display: grid; font-weight: 800; font-size: 0.9rem; line-height: 1.25; }
+  .paso-ruta .nombre-paso small { font-size: 0.75rem; font-weight: 600; color: var(--color-on-superficie-variante); }
+  .paso-ruta[aria-current="step"] { background: #FEF08A; color: var(--color-tinta); box-shadow: var(--sombra-sm); }
+  .paso-ruta[aria-current="step"] .nombre-paso small { color: var(--color-tinta); }
+  .paso-ruta.hecho .numero-form { background: var(--color-marca); color: var(--color-tinta); }
+  .nav-ruta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 18px; }
+  .nav-ruta .boton-primario { margin-top: 0; }
+
+  /* ---------- Comparar perfiles ---------- */
+
+  .columnas-comparacion { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 20px; }
+  .version-perfil {
+    display: flex; flex-direction: column; gap: 10px; padding: 16px 18px;
+    border: 3px solid var(--color-contorno); border-radius: 8px 16px 16px 16px; background: var(--color-tarjeta); box-shadow: var(--sombra-sm);
+  }
+  .version-perfil:nth-child(2) { box-shadow: 4px 4px 0 var(--color-marca); }
+  .perfil-chip { width: fit-content; background: #FEF08A; color: var(--color-tinta); font-size: 0.9rem; }
+  .version-perfil:nth-child(2) .perfil-chip { background: var(--color-primario-container); color: var(--color-on-primario-container); }
+  .version-perfil .intro { font-weight: 500; }
+  .vista-previa { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 0.88rem; font-weight: 500; color: var(--color-on-superficie-variante); }
+  .version-perfil .boton-secundario { margin-top: auto; width: fit-content; }
+  .volver-comparacion { margin: 0 0 4px; }
+
+  /* ---------- Valoracion y regenerar con ajustes ---------- */
+
+  .barra-feedback { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+  .valoracion { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .boton-icono {
+    width: 38px; height: 38px; display: grid; place-items: center; padding: 0;
+    border: 2px solid var(--color-contorno); border-radius: 50%; background: var(--color-tarjeta);
+    color: var(--color-on-superficie); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .boton-icono:hover { transform: translate(-2px, -2px); box-shadow: var(--sombra-sm); }
+  .boton-icono .material-symbols-rounded { font-size: 20px; }
+  .boton-icono[aria-pressed="true"][data-valor="util"] { background: var(--color-marca); color: var(--color-tinta); box-shadow: var(--sombra-sm); }
+  .boton-icono[aria-pressed="true"][data-valor="no_util"] { background: #FEF08A; color: var(--color-tinta); box-shadow: var(--sombra-sm); }
+  .gracias { font-size: 0.8rem; font-weight: 700; color: var(--color-on-superficie-variante); }
+  .panel-ajustes {
+    margin-top: 12px; padding: 14px 16px; border: 2px dashed var(--color-contorno); border-radius: 12px;
+    display: grid; gap: 12px; background: var(--color-superficie);
+  }
+  .panel-ajustes[hidden] { display: none; }
+  .chips-ajuste { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-ajuste {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border: 2px solid var(--color-contorno);
+    border-radius: 9999px; background: var(--color-tarjeta); color: var(--color-on-superficie);
+    font-family: inherit; font-weight: 700; font-size: 0.82rem; cursor: pointer;
+  }
+  .chip-ajuste .material-symbols-rounded { font-size: 16px; }
+  .chip-ajuste[aria-pressed="true"] { background: var(--color-marca); color: var(--color-tinta); box-shadow: 3px 3px 0 var(--color-sombra); }
+  .panel-ajustes .boton-primario { margin-top: 0; width: fit-content; }
+
+  /* ---------- Preguntale al documento ---------- */
+
+  .preguntas-doc { display: grid; gap: 14px; }
+  .preguntas-doc .titulo-seccion { margin-bottom: 0; }
+  .ayuda-preguntas { font-size: 0.85rem; font-weight: 500; color: var(--color-on-superficie-variante); }
+  .hilo { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .hilo:empty { display: none; }
+  .burbuja { max-width: min(88%, 620px); padding: 10px 14px; border: 3px solid var(--color-contorno); font-weight: 500; word-break: break-word; }
+  .burbuja-usuario {
+    justify-self: end; background: var(--color-primario); color: var(--color-on-primario); font-weight: 700;
+    border-radius: 16px 16px 4px 16px;
+  }
+  .burbuja-respuesta { justify-self: start; background: var(--color-tarjeta); border-radius: 16px 16px 16px 4px; box-shadow: var(--sombra-sm); display: grid; gap: 8px; }
+  .burbuja-respuesta.fuera { background: #FEF08A; color: var(--color-tinta); }
+  .burbuja-error { justify-self: start; background: var(--color-error); color: var(--color-on-error); border-radius: 16px 16px 16px 4px; }
+  .burbuja-pensando { justify-self: start; display: flex; align-items: center; gap: 10px; background: var(--color-tarjeta); border-radius: 16px 16px 16px 4px; }
+  .burbuja-pensando .marca-cargando { width: 56px; padding: 6px 8px; border-radius: 10px; box-shadow: none; border-width: 2px; }
+  .fuentes-chat { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fuente-chat summary {
+    display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; cursor: pointer; list-style: none;
+    border: 2px solid var(--color-contorno); border-radius: 9999px; background: var(--color-primario-container);
+    color: var(--color-on-primario-container); font-size: 0.75rem; font-weight: 800;
+  }
+  .fuente-chat summary::-webkit-details-marker { display: none; }
+  .fuente-chat summary .material-symbols-rounded { font-size: 14px; }
+  .fuente-chat blockquote {
+    margin: 8px 0 0; padding: 8px 12px; border-left: 4px solid var(--color-contorno);
+    font-size: 0.82rem; color: var(--color-on-superficie-variante);
+  }
+  .sugerencias { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sugerencias[hidden] { display: none; }
+  .form-pregunta { display: flex; gap: 10px; align-items: stretch; }
+  .form-pregunta input {
+    flex: 1; min-width: 0; padding: 10px 14px; border: 3px solid var(--color-contorno); border-radius: 9999px;
+    background: var(--color-tarjeta); color: var(--color-on-superficie); font-family: inherit; font-size: 0.95rem; font-weight: 600;
+  }
+  .form-pregunta .boton-primario { margin-top: 0; padding: 10px 20px; }
+  .estado-pregunta { font-size: 0.78rem; font-weight: 700; color: var(--color-on-superficie-variante); }
+  .estado-pregunta.error { color: var(--color-on-error); }
 
   /* ---------- Responsivo y accesibilidad ---------- */
 
@@ -504,6 +870,12 @@
     .resumen-destacado { font-size: 1.1rem; padding: 16px; }
     .atajos { display: none; }
     .pestaña { flex: 1; justify-content: center; padding: 10px 14px; }
+    .marca-isotipo { width: 44px; height: 44px; border-radius: 12px; }
+    .marca-logo { height: 26px; }
+    .marca-lema { margin-left: 0; }
+    .form-pregunta { flex-direction: column; }
+    .form-pregunta .boton-primario { justify-content: center; }
+    .burbuja { max-width: 100%; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -512,6 +884,7 @@
   }
 
   @media print {
+    body { background: #FFFFFF; }
     body * { visibility: hidden; }
     .zona-impresion, .zona-impresion * { visibility: visible; }
     .zona-impresion {
@@ -519,6 +892,7 @@
       font-family: 'Montserrat', sans-serif; color: #111827;
     }
     .zona-impresion h1 { font-size: 1.6rem; margin-bottom: 10px; }
+    .zona-impresion .logo-impresion { display: block; height: 22px; width: auto; margin-bottom: 16px; }
     .zona-impresion h3 { font-size: 1.05rem; margin: 18px 0 6px; }
     .zona-impresion .item-impresion { margin-bottom: 16px; page-break-inside: avoid; }
     .zona-impresion pre {
@@ -536,6 +910,21 @@
   </div>
 
   <div class="contenedor-principal">
+    <header class="cabecera-marca">
+      <h1 class="marca">
+        <img class="marca-isotipo" src="assets/isotipo-nuevamente.svg" alt="" width="56" height="56">
+        <svg class="marca-logo" viewBox="0 0 884 118" role="img" aria-label="NuevaMente" width="255" height="34">
+          <path fill="currentColor" fill-rule="evenodd" d="M120.8 116.5C104.4 112.0 93.0 100.0 90.0 84.1C88.4 75.5 88.7 39.6 90.4 35.5C92.4 30.7 96.4 29.0 105.4 29.0C112.3 29.0 113.2 29.2 116.2 31.9L119.5 34.8L120.0 57.7C120.6 83.2 121.1 85.4 127.4 88.4C131.8 90.5 135.7 90.4 140.0 88.2C146.4 84.8 147.0 82.2 147.0 58.7C147.0 35.6 147.5 33.3 153.2 30.4C155.5 29.2 158.3 28.9 164.2 29.2C171.8 29.5 172.3 29.7 175.2 32.8L178.1 36.2L177.8 61.3C177.4 91.0 176.7 93.9 167.3 104.0C156.3 115.9 137.2 121.0 120.8 116.5Z M213.1 116.4C193.5 111.1 181.0 96.0 180.2 76.3C179.1 52.1 193.6 33.4 217.4 28.3C239.9 23.6 263.0 36.3 269.9 57.2C273.3 67.4 273.7 74.3 271.1 76.9C269.0 79.0 268.3 79.0 237.5 79.0C220.2 79.0 206.0 79.2 206.0 79.5C206.0 79.8 206.9 81.8 208.0 83.9C214.4 96.5 230.6 99.4 241.4 89.9C245.5 86.3 246.4 85.9 253.2 85.4C264.0 84.6 269.4 85.8 269.8 89.2C270.6 95.6 260.8 107.5 250.9 112.4C239.3 118.0 224.8 119.6 213.1 116.4Z M573.0 116.6C542.7 108.2 529.6 75.6 545.4 48.5C561.0 22.0 604.8 19.6 623.8 44.3C633.0 56.1 636.9 75.9 630.5 78.4C629.6 78.7 614.7 79.0 597.4 79.0C576.1 79.0 566.0 79.3 566.0 80.0C566.0 82.0 568.8 86.5 571.7 89.1C580.8 97.6 592.8 97.7 602.1 89.4L607.1 85.0L616.3 85.1C631.5 85.3 633.3 86.8 628.9 95.5C624.3 104.7 612.6 113.3 600.3 116.5C593.5 118.3 579.3 118.3 573.0 116.6Z M823.1 116.4C803.5 111.2 791.0 96.0 790.2 76.4C789.5 61.8 793.2 51.9 802.8 41.8C831.3 11.9 884.0 31.8 884.0 72.5C884.0 79.0 883.9 79.0 848.1 79.0L815.9 79.0L816.5 81.2C818.4 87.5 826.8 94.3 834.2 95.5C840.0 96.5 848.1 93.7 853.1 88.9L857.3 84.9L868.0 85.3C873.9 85.5 879.2 86.0 879.8 86.4C885.1 89.6 873.0 106.4 861.1 112.4C850.3 117.9 834.8 119.6 823.1 116.4Z M370.7 115.9C360.0 113.4 347.5 104.3 342.9 95.6C341.6 93.0 340.2 91.0 339.8 91.0C339.5 91.0 337.6 93.8 335.7 97.2C326.9 112.9 322.2 116.5 311.0 115.8C300.6 115.2 298.3 113.0 289.5 94.6C270.5 55.0 265.0 42.2 265.0 38.3C265.0 31.1 271.2 26.2 279.0 27.3C286.7 28.3 288.2 30.3 301.1 56.6C307.6 70.0 313.2 81.0 313.4 81.0C313.7 81.0 316.5 76.4 319.6 70.8C334.5 44.0 340.8 36.3 352.2 30.8C374.6 19.8 402.9 24.4 418.8 41.4C421.9 44.8 429.9 55.4 436.5 64.8C443.8 75.3 448.7 81.5 449.1 80.8C449.4 80.1 450.2 73.9 450.8 67.0C451.4 60.1 452.7 52.3 453.6 49.6C457.2 39.1 468.9 31.9 479.9 33.4C488.2 34.5 492.5 37.5 503.5 49.9C521.1 69.7 541.2 94.3 542.7 97.9C546.2 106.1 539.2 116.0 530.0 116.0C522.4 116.0 521.3 114.9 492.0 79.7C486.2 72.8 481.3 67.1 481.0 67.0C480.7 67.0 479.9 73.7 479.3 82.0C478.4 94.9 477.9 97.7 475.6 102.5C472.2 109.2 467.2 113.6 460.1 115.6C447.3 119.4 436.0 114.0 426.9 99.9C423.2 94.1 422.8 94.0 420.1 98.4C411.6 112.1 388.8 120.2 370.7 115.9Z M5.4 114.2C0.1 110.8 -0.2 108.8 0.2 80.4C0.5 54.9 0.6 54.4 3.1 49.0C8.3 38.1 16.2 31.7 28.5 28.5C44.2 24.4 59.9 28.5 72.1 39.8C84.8 51.5 87.0 58.6 87.0 87.8C87.0 111.2 86.8 112.1 81.3 114.9C78.5 116.3 65.8 116.3 62.6 114.8C57.0 112.3 56.5 110.5 56.0 85.8L55.5 63.1L52.5 60.0C48.4 55.7 43.4 54.4 38.8 56.3C31.9 59.2 31.6 60.6 31.0 86.7L30.5 110.0L27.7 112.7C25.2 115.2 24.2 115.5 16.7 115.8C10.0 116.0 7.9 115.8 5.4 114.2Z M639.2 113.2C635.1 109.3 634.7 106.7 635.2 80.3C635.7 54.6 636.4 51.1 643.7 41.6C661.3 18.6 702.5 19.9 718.0 43.9C723.3 52.3 724.0 56.7 724.0 84.4L724.0 109.2L720.6 112.6C717.3 115.9 717.0 116.0 709.0 116.0C693.1 116.0 692.0 114.0 692.0 84.5C692.0 61.2 691.6 58.9 686.6 55.6C683.5 53.6 676.8 53.5 673.1 55.5C667.7 58.2 667.0 61.6 667.0 85.0C667.0 114.0 665.9 116.0 650.2 116.0C642.8 116.0 642.0 115.8 639.2 113.2Z M757.9 114.6C748.0 112.0 738.9 104.3 734.7 95.2C732.9 91.1 732.5 88.1 732.0 71.0L731.5 51.5L729.0 51.2C724.5 50.5 724.0 49.3 724.0 39.4C724.0 29.4 724.7 28.0 729.9 28.0C731.9 28.0 732.0 27.4 732.0 18.5C732.0 2.9 735.2 -0.5 749.2 0.2C756.7 0.5 757.3 0.7 760.1 3.8C762.9 6.9 763.0 7.4 763.0 17.4L763.0 27.8L775.0 28.2L787.0 28.5L790.2 31.8C793.0 34.6 793.5 35.7 793.5 40.0C793.5 44.3 793.0 45.4 790.2 48.2L787.0 51.5L775.0 51.8L763.0 52.2L763.0 67.0C763.0 75.2 763.4 83.0 764.0 84.4C765.6 88.6 770.6 91.0 777.8 91.0C785.0 91.0 788.8 92.7 791.4 97.0C794.7 102.8 792.5 111.5 786.8 114.6C783.8 116.3 764.1 116.3 757.9 114.6Z M389.4 90.0C399.4 86.2 404.6 73.3 400.1 63.5C392.4 46.8 366.7 48.6 361.9 66.3C357.6 82.2 373.6 96.0 389.4 90.0Z M247.0 63.5C247.0 61.7 243.6 56.9 240.1 53.7C231.3 45.8 215.1 48.2 209.0 58.3C205.4 64.1 205.2 64.0 227.0 64.0C238.0 64.0 247.0 63.8 247.0 63.5Z M607.0 62.8C607.0 60.2 603.0 55.0 598.9 52.3C593.6 48.8 583.2 47.9 577.8 50.4C573.7 52.4 567.5 58.6 566.5 61.8L565.9 64.0L586.4 64.0C602.2 64.0 607.0 63.7 607.0 62.8Z M857.0 63.0C857.0 62.4 856.4 60.7 855.6 59.2C849.6 47.7 831.6 45.4 821.7 54.8C819.1 57.2 816.0 62.0 816.0 63.5C816.0 63.8 825.2 64.0 836.5 64.0C850.1 64.0 857.0 63.6 857.0 63.0Z"/>
+        </svg>
+      </h1>
+      <p class="marca-lema">Tu documentación técnica, lista para aprender</p>
+      <button type="button" class="boton-tema" id="btn-tema" role="switch" aria-checked="false" title="Activar o desactivar el modo oscuro">
+        <span class="material-symbols-rounded" aria-hidden="true">dark_mode</span>
+        <span>Modo oscuro</span>
+        <span class="interruptor" aria-hidden="true"></span>
+      </button>
+    </header>
+
     <div class="pestañas" role="tablist" aria-label="Secciones de NuevaMente">
       <button type="button" class="pestaña" role="tab" id="tab-crear" aria-selected="true" aria-controls="panel-crear">
         <span class="material-symbols-rounded" aria-hidden="true">edit_note</span> Crear contenido
@@ -543,65 +932,151 @@
       <button type="button" class="pestaña" role="tab" id="tab-estudiar" aria-selected="false" aria-controls="panel-estudiar" tabindex="-1">
         <span class="material-symbols-rounded" aria-hidden="true">school</span> Estudiar
       </button>
+      <button type="button" class="pestaña" role="tab" id="tab-materiales" aria-selected="false" aria-controls="panel-materiales" tabindex="-1">
+        <span class="material-symbols-rounded" aria-hidden="true">collections_bookmark</span> Mis materiales
+        <span class="contador-pestaña" id="contador-materiales" hidden>0</span>
+      </button>
     </div>
 
     <div id="panel-crear" role="tabpanel" aria-labelledby="tab-crear">
       <div class="tarjeta-formulario">
-        <h2 class="titulo-form"><span class="material-symbols-rounded">upload_file</span> Sube tu documento tecnico</h2>
+        <h2 class="titulo-form"><span class="material-symbols-rounded" aria-hidden="true">auto_stories</span> Crea tu material de estudio</h2>
 
-        <div class="zona-drop" id="zona-drop" role="button" tabindex="0" aria-describedby="nombre-archivo">
-          <span class="material-symbols-rounded" id="icono-archivo">description</span>
-          <p id="nombre-archivo">Arrastra tu PDF, MD o TXT aqui, o haz clic</p>
-          <input type="file" id="archivo" accept=".pdf,.md,.txt" hidden>
-        </div>
+        <section class="seccion-form" aria-labelledby="paso-1">
+          <h3 class="paso-form" id="paso-1" data-paso="1"><span class="numero-form" aria-hidden="true">1</span><span class="texto-paso">Sube tu documento</span></h3>
+          <div class="carga-archivo" id="carga-archivo">
+            <div class="zona-drop" id="zona-drop" role="button" tabindex="0" aria-describedby="nombre-archivo">
+              <span class="material-symbols-rounded" aria-hidden="true">upload_file</span>
+              <p id="nombre-archivo">Arrastra tu PDF, MD o TXT aquí, o haz clic (máx. 10 MB)</p>
+            </div>
+            <div class="chip-archivo" id="chip-archivo" hidden>
+              <span class="tipo-archivo" id="tipo-archivo" aria-hidden="true">PDF</span>
+              <div class="datos-archivo">
+                <span class="nombre-chip" id="nombre-chip"></span>
+                <span class="peso-chip" id="peso-chip"></span>
+                <div class="barra-peso" aria-hidden="true"><span id="barra-peso"></span></div>
+              </div>
+              <div class="acciones-chip">
+                <button type="button" class="boton-secundario" id="btn-cambiar-archivo"><span class="material-symbols-rounded" aria-hidden="true">swap_horiz</span> Cambiar</button>
+                <button type="button" class="boton-secundario" id="btn-quitar-archivo" aria-label="Quitar archivo"><span class="material-symbols-rounded" aria-hidden="true">close</span> Quitar</button>
+              </div>
+            </div>
+            <input type="file" id="archivo" accept=".pdf,.md,.txt" hidden>
+          </div>
+        </section>
 
-        <fieldset class="bloque-formato">
-          <legend class="etiqueta-campo">Formato</legend>
-          <div class="selector-formato" id="formato"></div>
-        </fieldset>
+        <section class="seccion-form">
+          <fieldset class="bloque-formato">
+            <legend class="paso-form" data-paso="2"><span class="numero-form" aria-hidden="true">2</span><span class="texto-paso">Elige el formato</span></legend>
+            <div class="selector-formato" id="formato"></div>
+          </fieldset>
+        </section>
 
-        <div class="fila-selects">
-          <div><label class="etiqueta-campo" for="perfil">Perfil</label><select id="perfil"></select></div>
-          <div><label class="etiqueta-campo" for="nicho">Nicho</label><select id="nicho"></select></div>
-          <div><label class="etiqueta-campo" for="nivel">Nivel</label><select id="nivel"></select></div>
-        </div>
+        <section class="seccion-form" aria-labelledby="paso-3">
+          <h3 class="paso-form" id="paso-3" data-paso="3"><span class="numero-form" aria-hidden="true">3</span><span class="texto-paso">Ajústalo a tu público</span></h3>
+          <div class="fila-selects">
+            <div><label class="etiqueta-campo" for="perfil">Perfil</label><select id="perfil"></select></div>
+            <div><label class="etiqueta-campo" for="nicho">Sector</label><select id="nicho"></select></div>
+            <div><label class="etiqueta-campo" for="nivel">Nivel de detalle</label><select id="nivel"></select></div>
+            <div><label class="etiqueta-campo" for="idioma">Idioma del contenido</label><select id="idioma"></select></div>
+          </div>
+        </section>
 
         <div class="aviso" id="aviso" role="alert" hidden>
           <span class="material-symbols-rounded">error</span>
           <div>
             <strong id="aviso-titulo"></strong>
             <p id="aviso-mensaje"></p>
-            <details id="aviso-detalle" hidden><summary>Detalle tecnico</summary><p id="aviso-detalle-texto"></p></details>
+            <details id="aviso-detalle" hidden><summary>Detalle técnico</summary><p id="aviso-detalle-texto"></p></details>
           </div>
         </div>
 
         <button id="btn-generar" class="boton-primario" type="button">
           <span class="material-symbols-rounded">auto_awesome</span> <span id="texto-generar">Generar</span>
         </button>
+
+        <section class="mas-formas" aria-labelledby="titulo-mas-formas">
+          <h3 class="titulo-mas-formas" id="titulo-mas-formas"><span class="material-symbols-rounded" aria-hidden="true">explore</span> También puedes</h3>
+          <div class="opciones-extra">
+            <article class="opcion-extra">
+              <span class="icono-extra" aria-hidden="true"><span class="material-symbols-rounded">route</span></span>
+              <div class="texto-extra">
+                <strong>Ruta de estudio</strong>
+                <span>TL;DR, tarjetas y quiz en orden: entiendes, memorizas y compruebas.</span>
+              </div>
+              <div class="accion-extra">
+                <button type="button" class="boton-secundario" id="btn-ruta"><span class="material-symbols-rounded" aria-hidden="true">route</span> Crear ruta</button>
+              </div>
+            </article>
+            <article class="opcion-extra comparar">
+              <span class="icono-extra" aria-hidden="true"><span class="material-symbols-rounded">compare_arrows</span></span>
+              <div class="texto-extra">
+                <strong>Comparar perfiles</strong>
+                <span>El mismo formato para tu perfil y para otro público.</span>
+              </div>
+              <div class="accion-extra">
+                <select id="perfil-b" aria-label="Perfil con el que comparar"></select>
+                <button type="button" class="boton-secundario" id="btn-comparar"><span class="material-symbols-rounded" aria-hidden="true">compare_arrows</span> Comparar</button>
+              </div>
+            </article>
+          </div>
+        </section>
       </div>
     </div>
 
     <div id="panel-estudiar" role="tabpanel" aria-labelledby="tab-estudiar" hidden>
-      <div id="resultado" aria-live="polite">
-        <p class="estado-vacio">Aun no has generado contenido. Ve a "Crear contenido" para empezar.</p>
-      </div>
+      <div id="resultado" aria-live="polite"></div>
+    </div>
+
+    <div id="panel-materiales" role="tabpanel" aria-labelledby="tab-materiales" hidden>
+      <div id="materiales"></div>
     </div>
   </div>
 
   <div id="zona-impresion" class="zona-impresion" aria-hidden="true"></div>
 
   <script>
+    const SVG_MARCA = `<svg viewBox="-4 -4 486 166" aria-hidden="true"><path pathLength="1" fill-rule="evenodd" d="M203.2 156.0C184.6 151.1 167.6 138.5 158.7 123.0C157.5 120.8 156.2 119.0 155.9 119.0C155.6 119.0 153.3 121.9 150.7 125.4C136.1 145.3 119.0 154.6 98.6 153.8C79.5 153.1 71.8 147.4 53.8 120.5C47.9 111.7 34.5 91.7 23.9 76.0C13.4 60.3 3.7 45.2 2.4 42.5C-5.8 25.1 8.3 5.0 28.9 5.0C43.2 5.0 49.0 9.8 65.8 35.5C90.4 73.0 106.2 96.5 108.2 98.5C110.1 100.5 110.2 100.5 113.8 96.4C117.4 92.4 134.4 65.8 145.1 47.5C155.0 30.5 162.9 21.9 176.5 13.5C206.8 -5.4 248.4 -3.9 276.2 17.2C284.9 23.9 289.0 28.7 305.5 52.0C327.0 82.4 329.9 86.2 331.8 85.8C333.3 85.5 333.6 83.4 334.2 70.2C335.2 47.0 337.9 38.9 347.9 29.0C365.1 11.8 391.1 12.2 408.9 29.9C412.0 33.0 422.4 45.8 432.0 58.4C441.6 71.0 455.2 88.8 462.2 97.9C476.3 116.3 478.6 120.9 477.7 129.5C476.3 142.9 465.9 152.2 452.5 152.2C441.0 152.2 435.4 148.4 423.3 131.8C397.1 96.1 384.8 79.9 383.4 79.3C379.5 77.8 378.6 81.2 377.9 100.3C377.0 124.1 374.3 132.5 364.3 142.2C344.0 161.9 315.0 155.0 296.1 125.8C293.7 122.0 291.5 119.0 291.1 119.0C290.8 119.0 289.2 121.1 287.6 123.6C271.3 149.4 233.5 163.9 203.2 156.0Z M234.5 116.0C254.6 109.1 264.9 86.2 256.3 67.8C247.9 50.0 227.8 42.0 209.5 49.0C201.3 52.2 192.2 61.3 189.2 69.3C178.5 98.0 205.6 125.9 234.5 116.0Z"/></svg>`;
     const EXTENSIONES_VALIDAS = ["pdf", "md", "txt"];
     const LETRAS = ["A", "B", "C", "D", "E"];
-    const TEXTO_ZONA_DROP = "Arrastra tu PDF, MD o TXT aqui, o haz clic";
+    const TAMANO_MAXIMO_BYTES = 10 * 1024 * 1024; // mismo limite que valida el backend
+
+    // Los valores internos (contratos de Pydantic) no llevan tildes; aqui se muestran bien escritos
+    const ETIQUETAS = {
+      "Lider Tecnico": "Líder técnico",
+      "Didactico": "Didáctico",
+      "Intermedio": "Intermedio",
+      "Profundo": "Profundo",
+    };
+    const etiqueta = (valor) => ETIQUETAS[valor] || valor;
 
     const INFO_FORMATOS = {
       Flashcards: { etiqueta: "Flashcards", icono: "style", descripcion: "Tarjetas de pregunta y respuesta para memorizar" },
-      Tutorial: { etiqueta: "Tutorial", icono: "menu_book", descripcion: "Pasos guiados con ejemplos practicos" },
-      Quiz: { etiqueta: "Quiz", icono: "quiz", descripcion: "Preguntas con correccion al instante y puntaje" },
+      Tutorial: { etiqueta: "Tutorial", icono: "menu_book", descripcion: "Pasos guiados con ejemplos prácticos" },
+      Quiz: { etiqueta: "Quiz", icono: "quiz", descripcion: "Preguntas con corrección al instante y puntaje" },
       TLDR: { etiqueta: "TL;DR", icono: "bolt", descripcion: "Lo esencial del documento en un minuto" },
-      Guion: { etiqueta: "Guion", icono: "movie", descripcion: "Narracion por escenas para un video o charla" },
+      Guion: { etiqueta: "Guion", icono: "movie", descripcion: "Narración por escenas para un video o charla" },
     };
+    // Tipos que no son un formato: solo se usan en "Mis materiales" y en la carga
+    const INFO_EXTRA = {
+      Ruta: { etiqueta: "Ruta de estudio", icono: "route" },
+      Comparacion: { etiqueta: "Comparación", icono: "compare_arrows" },
+    };
+    const infoFormato = (formato) => INFO_FORMATOS[formato] || INFO_EXTRA[formato] || { etiqueta: formato, icono: "article" };
+
+    const PASOS_RUTA = [
+      { formato: "TLDR", nombre: "Lee el TL;DR", verbo: "Entiende" },
+      { formato: "Flashcards", nombre: "Repasa las tarjetas", verbo: "Memoriza" },
+      { formato: "Quiz", nombre: "Comprueba con el quiz", verbo: "Comprueba" },
+    ];
+    const AJUSTES = [
+      { clave: "mas_ejemplos", etiqueta: "Más ejemplos", icono: "lightbulb" },
+      { clave: "mas_corto", etiqueta: "Más corto", icono: "compress" },
+      { clave: "mas_tecnico", etiqueta: "Más técnico", icono: "terminal" },
+      { clave: "menos_jerga", etiqueta: "Menos jerga", icono: "record_voice_over" },
+      { clave: "mas_elementos", etiqueta: "Más elementos", icono: "add_circle" },
+    ];
+    const MAX_PREGUNTAS = 20;
 
     let ultimaClaveResultado = null;
     let ultimoIdError = null;
@@ -609,24 +1084,68 @@
     let estadoQuiz = null;
     let ultimoResultado = null;
     let ultimaSolicitud = null;
+    let idUltimaGeneracion = null;
+    let estadoRepaso = null;
+    let historial = [];
+    let claveHistorial = "";
+    let resultadoActivo = null;     // el material simple que se ve ahora (lo que se exporta)
+    let estadoRuta = null;
+    let estadoComparacion = null;
+    let conversaciones = {};
+    let claveConversaciones = "";
+    let valoraciones = {};
+    let idPreguntaPendiente = null;
+    let preguntaPendiente = "";
+    let ajustesElegidos = new Set();
+
+    // ---------- Cola de acciones hacia Streamlit ----------
+    // Streamlit guarda solo el ultimo valor del componente: si se mandan dos acciones seguidas,
+    // la primera se pierde, y una accion nueva interrumpe la que se esta ejecutando. Por eso
+    // se envian de a una: las largas (generar, preguntar) esperan su respuesta; las cortas, el render.
+    const ACCIONES_LARGAS = ["generar", "ruta", "comparar", "preguntar"];
+    const colaAcciones = [];
+    let accionEnCurso = null;       // id de la accion larga que se esta ejecutando
+    let esperandoRender = false;
+    let temporizadorRender = null;
+
+    function enviarAccion(valor) {
+      colaAcciones.push(valor);
+      despacharCola();
+    }
+
+    function despacharCola() {
+      if (esperandoRender || accionEnCurso !== null || colaAcciones.length === 0) return;
+      const valor = colaAcciones.shift();
+      if (ACCIONES_LARGAS.includes(valor.accion)) accionEnCurso = valor.id;
+      esperandoRender = true;
+      // Si Streamlit no vuelve a dibujar (accion sin cambios), no se bloquea la cola
+      clearTimeout(temporizadorRender);
+      temporizadorRender = setTimeout(() => { esperandoRender = false; despacharCola(); }, 2000);
+      enviarAStreamlit("streamlit:setComponentValue", { value: valor, dataType: "json" });
+    }
+
+    function hayOperacionPendiente() {
+      return idSolicitudPendiente !== null || idPreguntaPendiente !== null;
+    }
 
     // ---------- Pestañas ----------
 
+    const PESTAÑAS = ["crear", "estudiar", "materiales"];
+
     function cambiarPestaña(nombre) {
-      const activarCrear = nombre === "crear";
-      const tabCrear = document.getElementById("tab-crear");
-      const tabEstudiar = document.getElementById("tab-estudiar");
-      tabCrear.setAttribute("aria-selected", String(activarCrear));
-      tabCrear.tabIndex = activarCrear ? 0 : -1;
-      tabEstudiar.setAttribute("aria-selected", String(!activarCrear));
-      tabEstudiar.tabIndex = activarCrear ? -1 : 0;
-      document.getElementById("panel-crear").hidden = !activarCrear;
-      document.getElementById("panel-estudiar").hidden = activarCrear;
+      PESTAÑAS.forEach((pestaña) => {
+        const activa = pestaña === nombre;
+        const tab = document.getElementById(`tab-${pestaña}`);
+        tab.setAttribute("aria-selected", String(activa));
+        tab.tabIndex = activa ? 0 : -1;
+        document.getElementById(`panel-${pestaña}`).hidden = !activa;
+      });
       ajustarAltura();
     }
 
-    document.getElementById("tab-crear").addEventListener("click", () => cambiarPestaña("crear"));
-    document.getElementById("tab-estudiar").addEventListener("click", () => cambiarPestaña("estudiar"));
+    PESTAÑAS.forEach((pestaña) => {
+      document.getElementById(`tab-${pestaña}`).addEventListener("click", () => cambiarPestaña(pestaña));
+    });
     document.querySelectorAll('[role="tab"]').forEach((pestaña, indice, lista) => {
       pestaña.addEventListener("keydown", (evento) => {
         if (evento.key !== "ArrowRight" && evento.key !== "ArrowLeft") return;
@@ -696,7 +1215,7 @@
       valores.forEach((valor) => {
         const opcion = document.createElement("option");
         opcion.value = valor;
-        opcion.textContent = valor;
+        opcion.textContent = etiqueta(valor);
         select.appendChild(opcion);
       });
     }
@@ -738,6 +1257,8 @@
     function ponerCargando(activo) {
       const boton = document.getElementById("btn-generar");
       boton.disabled = activo;
+      document.getElementById("btn-ruta").disabled = activo;
+      document.getElementById("btn-comparar").disabled = activo;
       boton.classList.toggle("cargando", activo);
       boton.querySelector(".material-symbols-rounded").textContent = activo ? "progress_activity" : "auto_awesome";
       document.getElementById("texto-generar").textContent = activo ? "Generando..." : "Generar";
@@ -745,7 +1266,7 @@
     }
 
     const PASOS_CARGA = [
-      "Leyendo el documento y buscando los fragmentos mas relevantes...",
+      "Leyendo el documento y buscando los fragmentos más relevantes...",
       "Redactando el contenido para tu perfil...",
       "Verificando que sea fiel a la fuente...",
     ];
@@ -773,22 +1294,32 @@
       }, 7000);
     }
 
-    function mostrarCargando(formato) {
-      const info = INFO_FORMATOS[formato] || { etiqueta: formato };
+    function mostrarCargando(accion, datos) {
+      const info = infoFormato(datos.formato);
       estadoQuiz = null;
+      let titulo = `Preparando tu ${escaparHtml(info.etiqueta)}`;
+      let nota = "Puede tardar hasta un minuto.";
+      if (accion === "ruta") {
+        titulo = "Preparando tu ruta de estudio";
+        nota = "Son 3 materiales (TL;DR, tarjetas y quiz): puede tardar unos minutos.";
+      } else if (accion === "comparar") {
+        titulo = `Comparando: ${escaparHtml(etiqueta(datos.perfil))} y ${escaparHtml(etiqueta(datos.perfil_b))}`;
+        nota = "Son 2 versiones del mismo material: puede tardar un par de minutos.";
+      }
       document.getElementById("resultado").innerHTML = `
         <div class="tarjeta-resultado tarjeta-cargando" role="status">
-          <h2>Preparando tu ${escaparHtml(info.etiqueta)}</h2>
+          <div class="marca-cargando" aria-hidden="true">${SVG_MARCA}</div>
+          <h2>${titulo}</h2>
           <div class="animacion-agentes" aria-hidden="true">
             <div class="agente-paso">${icono("search")} Investiga</div>
             <span class="conector-agentes"></span>
             <div class="agente-paso">${icono("edit_note")} Redacta</div>
             <span class="conector-agentes"></span>
-            <div class="agente-paso">${icono("fact_check")} Critica</div>
+            <div class="agente-paso">${icono("fact_check")} Revisa</div>
           </div>
           <div class="barra-carga" aria-hidden="true"><span></span></div>
           <p id="texto-carga">${escaparHtml(PASOS_CARGA[0])}</p>
-          <p class="nota-tiempo">Puede tardar hasta un minuto.</p>
+          <p class="nota-tiempo">${nota}</p>
         </div>`;
       iniciarAnimacionCarga();
     }
@@ -818,17 +1349,20 @@
 
       let html = `<div class="chips-meta">
         <span class="chip">${icono(info.icono)} ${escaparHtml(info.etiqueta)}</span>
-        <span class="chip">${icono("person")} ${escaparHtml(metadatos.perfil_aplicado)}</span>
+        <span class="chip">${icono("person")} ${escaparHtml(etiqueta(metadatos.perfil_aplicado))}</span>
         <span class="chip">${icono("schedule")} ~${escaparHtml(metadatos.tiempo_estimado_estudio_minutos)} min</span>`;
+      if (metadatos.idioma_salida && metadatos.idioma_salida !== "Español") {
+        html += `<span class="chip">${icono("translate")} ${escaparHtml(metadatos.idioma_salida)}</span>`;
+      }
       if (claridad) {
         html += `<span class="chip nivel-${escaparHtml(claridad.toLowerCase())}">${icono("school")} Claridad ${escaparHtml(claridad.toLowerCase())}</span>`;
       }
-      html += `<span class="chip" title="Que tan fiel es el contenido al documento original">
+      html += `<span class="chip" title="Qué tan fiel es el contenido al documento original">
           ${icono("verified")} Fidelidad ${anclaje}%
           <span class="medidor" aria-hidden="true"><span style="width:${anclaje}%"></span></span>
         </span>`;
       if (almacenamiento.status_upload === "fallido") {
-        html += `<span class="chip nivel-baja">${icono("cloud_off")} No se guardo en la nube</span>`;
+        html += `<span class="chip nivel-baja">${icono("cloud_off")} No se guardó en la nube</span>`;
       }
       html += `</div>`;
 
@@ -869,24 +1403,112 @@
         </details>`;
     }
 
-    function htmlBarraRegenerar() {
-      if (!ultimaSolicitud) return "";
+    // ---------- Valoracion y regenerar con ajustes ----------
+
+    function htmlValoracion(idMaterial) {
+      const valor = valoraciones[String(idMaterial)] || null;
       return `
-        <div class="barra-regenerar">
-          <button type="button" class="boton-secundario" data-accion="regenerar">${icono("refresh")} Regenerar</button>
-          <span class="ayuda">Pide otra version con el mismo documento y las mismas opciones.</span>
+        <div class="valoracion" data-id-material="${escaparHtml(idMaterial)}">
+          <span class="ayuda">¿Te sirvió?</span>
+          <button type="button" class="boton-icono" data-accion="valorar" data-valor="util" aria-pressed="${valor === "util"}" aria-label="Me sirvió" title="Me sirvió">${icono("thumb_up")}</button>
+          <button type="button" class="boton-icono" data-accion="valorar" data-valor="no_util" aria-pressed="${valor === "no_util"}" aria-label="No me sirvió" title="No me sirvió">${icono("thumb_down")}</button>
+          <span class="gracias" ${valor ? "" : "hidden"}>¡Gracias! Nos ayuda a mejorar.</span>
         </div>`;
     }
 
-    function mostrarResultado(resultado) {
+    function htmlBarraFeedback(resultado) {
+      // Desde "Mis materiales" se puede abrir un resultado viejo: regenerar usaria otro documento
+      const regenerable = Boolean(ultimaSolicitud) && resultado.id_solicitud === idUltimaGeneracion;
+      const chips = AJUSTES.map((ajuste) => `
+        <button type="button" class="chip-ajuste" data-accion="ajuste" data-ajuste="${ajuste.clave}" aria-pressed="${ajustesElegidos.has(ajuste.clave)}">${icono(ajuste.icono)} ${ajuste.etiqueta}</button>`).join("");
+      return `
+        <div class="barra-feedback">
+          ${htmlValoracion(resultado.id_solicitud)}
+          ${regenerable ? `<button type="button" class="boton-secundario" data-accion="abrir-ajustes" aria-expanded="false" aria-controls="panel-ajustes">${icono("tune")} Regenerar con ajustes</button>` : ""}
+        </div>
+        ${regenerable ? `
+          <div class="panel-ajustes" id="panel-ajustes" hidden>
+            <span class="ayuda" id="ayuda-ajustes">${icono("tune")} Elige qué cambiar en la nueva versión (opcional):</span>
+            <div class="chips-ajuste" role="group" aria-labelledby="ayuda-ajustes">${chips}</div>
+            <button type="button" class="boton-primario" data-accion="regenerar">${icono("refresh")} <span id="texto-regenerar">${textoRegenerar()}</span></button>
+          </div>` : ""}`;
+    }
+
+    function textoRegenerar() {
+      const n = ajustesElegidos.size;
+      return n === 0 ? "Regenerar" : `Regenerar con ${n} ${n === 1 ? "ajuste" : "ajustes"}`;
+    }
+
+    function abrirAjustes(forzarAbierto = false) {
+      const panel = document.getElementById("panel-ajustes");
+      const boton = document.querySelector("[data-accion='abrir-ajustes']");
+      if (!panel || !boton) return;
+      const abrir = forzarAbierto || panel.hidden;
+      panel.hidden = !abrir;
+      boton.setAttribute("aria-expanded", String(abrir));
+      ajustarAltura();
+    }
+
+    function alternarAjuste(boton) {
+      const clave = boton.dataset.ajuste;
+      if (ajustesElegidos.has(clave)) ajustesElegidos.delete(clave); else ajustesElegidos.add(clave);
+      boton.setAttribute("aria-pressed", String(ajustesElegidos.has(clave)));
+      const texto = document.getElementById("texto-regenerar");
+      if (texto) texto.textContent = textoRegenerar();
+    }
+
+    function valorar(boton) {
+      const contenedor = boton.closest(".valoracion");
+      const idMaterial = contenedor.dataset.idMaterial;
+      const valor = boton.dataset.valor;
+      valoraciones[idMaterial] = valor;
+      contenedor.querySelectorAll("[data-accion='valorar']").forEach((b) => b.setAttribute("aria-pressed", String(b === boton)));
+      contenedor.querySelector(".gracias").hidden = false;
+      // Si no sirvio, se ofrece directamente regenerar con ajustes
+      if (valor === "no_util") abrirAjustes(true);
+      const id = Number(idMaterial);
+      enviarAccion({ accion: "valorar", id: `v-${Date.now()}`, id_material: Number.isNaN(id) ? idMaterial : id, valor });
+    }
+
+    const HTML_ESTADO_VACIO = `
+      <div class="tarjeta-resultado vacio-marca">
+        <img class="isotipo-vacio" src="assets/isotipo-nuevamente.svg" alt="" width="72" height="72">
+        <h2>Tu primer material te espera</h2>
+        <p>Sube un documento técnico y elige cómo quieres estudiarlo: tarjetas, tutorial, quiz, resumen o guion.</p>
+        <button type="button" class="boton-primario" data-accion="ir-crear">${icono("upload_file")} Crear contenido</button>
+      </div>`;
+
+    // ---------- Mostrar un material (simple, ruta o comparacion) ----------
+
+    function mostrarResultado(resultado, irAEstudiar = true) {
       const contenedor = document.getElementById("resultado");
       detenerAnimacionCarga();
       estadoQuiz = null;
+      estadoRepaso = null;
+      estadoRuta = null;
+      estadoComparacion = null;
+      resultadoActivo = null;
       ultimoResultado = resultado;
-      if (!resultado) { contenedor.innerHTML = ""; return; }
+      if (!resultado) { contenedor.innerHTML = HTML_ESTADO_VACIO; renderizarMateriales(); ajustarAltura(); return; }
+      contenedor.innerHTML = `<div id="vista-material"></div><div id="zona-preguntas"></div>`;
+      if (resultado.tipo === "ruta") iniciarRuta(resultado);
+      else if (resultado.tipo === "comparacion") iniciarComparacion(resultado);
+      else montarResultado(document.getElementById("vista-material"), resultado, { feedback: true });
+      renderizarPreguntas(true);
+      renderizarMateriales();
+      if (irAEstudiar) cambiarPestaña("estudiar");
+      else ajustarAltura();
+    }
+
+    // Dibuja un material simple (con su formato interactivo) dentro de `contenedor`
+    function montarResultado(contenedor, resultado, { feedback = false, encabezado = "" } = {}) {
+      estadoQuiz = null;
+      estadoRepaso = null;
+      resultadoActivo = resultado;
       const contenido = resultado.contenido_adaptado || {};
       const formato = detectarFormato(resultado);
       contenedor.innerHTML = `
+        ${encabezado}
         <div class="tarjeta-resultado" data-formato="${escaparHtml(formato)}">
           <h2>${formatearTexto(contenido.titulo)}</h2>
           <p class="intro-resultado">${formatearTexto(contenido.introduccion_contextualizada)}</p>
@@ -894,10 +1516,236 @@
           <div class="cuerpo-formato" id="cuerpo-formato">${RENDERIZADORES[formato](contenido)}</div>
           ${htmlFuentes(resultado)}
           ${htmlBarraExportar(formato)}
-          ${htmlBarraRegenerar()}
+          ${feedback ? htmlBarraFeedback(resultado) : ""}
         </div>`;
       if (formato === "Quiz") iniciarQuiz(contenido.preguntas || []);
-      cambiarPestaña("estudiar");
+      if (formato === "Flashcards") iniciarFlashcards(contenido.items || []);
+      ajustarAltura();
+    }
+
+    // ---------- Ruta de estudio ----------
+
+    function iniciarRuta(resultado) {
+      estadoRuta = { resultado, paso: 0, hechos: new Set() };
+      const metadatos = resultado.metadatos || {};
+      document.getElementById("vista-material").innerHTML = `
+        <div class="tarjeta-resultado tarjeta-ruta">
+          <h2>${formatearTexto((resultado.contenido_adaptado || {}).titulo)}</h2>
+          <p class="intro-resultado">Sigue los pasos en orden: primero entiendes la idea, luego la memorizas y al final la compruebas.</p>
+          <div class="chips-meta">
+            <span class="chip">${icono("route")} 3 pasos</span>
+            <span class="chip">${icono("person")} ${escaparHtml(etiqueta(metadatos.perfil_aplicado))}</span>
+            <span class="chip">${icono("schedule")} ~${escaparHtml(metadatos.tiempo_estimado_estudio_minutos)} min</span>
+            ${metadatos.idioma_salida && metadatos.idioma_salida !== "Español" ? `<span class="chip">${icono("translate")} ${escaparHtml(metadatos.idioma_salida)}</span>` : ""}
+          </div>
+          <ol class="pasos-ruta" id="pasos-ruta" aria-label="Pasos de la ruta"></ol>
+          <div class="bloque-logro" id="logro-ruta" role="status" hidden>${icono("emoji_events")}
+            <div class="texto-logro"><strong>¡Completaste la ruta!</strong>Entendiste, memorizaste y comprobaste lo que aprendiste.</div>
+          </div>
+          <div class="barra-feedback">${htmlValoracion(resultado.id_solicitud)}</div>
+        </div>
+        <div id="paso-ruta"></div>
+        <div class="nav-ruta" id="nav-ruta"></div>`;
+      irAPasoRuta(0);
+    }
+
+    function pintarPasosRuta() {
+      if (!estadoRuta) return;
+      const pasos = estadoRuta.resultado.pasos || [];
+      document.getElementById("pasos-ruta").innerHTML = PASOS_RUTA.map((paso, i) => {
+        const hecho = estadoRuta.hechos.has(i);
+        const minutos = pasos[i] ? pasos[i].metadatos.tiempo_estimado_estudio_minutos : "";
+        return `
+          <li><button type="button" class="paso-ruta ${hecho ? "hecho" : ""}" data-accion="ir-paso-ruta" data-paso="${i}" ${i === estadoRuta.paso ? 'aria-current="step"' : ""}>
+            <span class="numero-form" aria-hidden="true">${hecho ? icono("check") : i + 1}</span>
+            <span class="nombre-paso">${paso.nombre}<small>${paso.verbo} · ~${escaparHtml(minutos)} min${hecho ? " · hecho" : ""}</small></span>
+          </button></li>`;
+      }).join("");
+      document.getElementById("logro-ruta").hidden = estadoRuta.hechos.size < PASOS_RUTA.length;
+      const ultimo = estadoRuta.paso === PASOS_RUTA.length - 1;
+      document.getElementById("nav-ruta").innerHTML = `
+        ${estadoRuta.paso > 0 ? `<button type="button" class="boton-secundario" data-accion="ir-paso-ruta" data-paso="${estadoRuta.paso - 1}">${icono("arrow_back")} Paso anterior</button>` : "<span></span>"}
+        <button type="button" class="boton-primario" data-accion="completar-paso-ruta">${icono(ultimo ? "flag" : "arrow_forward")} ${ultimo ? "Terminar la ruta" : `Listo, siguiente: ${PASOS_RUTA[estadoRuta.paso + 1].nombre.toLowerCase()}`}</button>`;
+      ajustarAltura();
+    }
+
+    function irAPasoRuta(indice) {
+      if (!estadoRuta) return;
+      const pasos = estadoRuta.resultado.pasos || [];
+      estadoRuta.paso = Math.max(0, Math.min(PASOS_RUTA.length - 1, indice));
+      const paso = pasos[estadoRuta.paso];
+      if (paso) montarResultado(document.getElementById("paso-ruta"), paso);
+      pintarPasosRuta();
+    }
+
+    function marcarPasoRuta(formato) {
+      if (!estadoRuta) return;
+      const indice = PASOS_RUTA.findIndex((paso) => paso.formato === formato);
+      if (indice === estadoRuta.paso && !estadoRuta.hechos.has(indice)) {
+        estadoRuta.hechos.add(indice);
+        pintarPasosRuta();
+      }
+    }
+
+    function completarPasoRuta() {
+      if (!estadoRuta) return;
+      estadoRuta.hechos.add(estadoRuta.paso);
+      if (estadoRuta.paso < PASOS_RUTA.length - 1) {
+        irAPasoRuta(estadoRuta.paso + 1);
+      } else {
+        pintarPasosRuta();
+      }
+      document.getElementById("vista-material").scrollIntoView({ block: "start" });
+    }
+
+    // ---------- Comparar perfiles ----------
+
+    function vistaPrevia(contenido, formato) {
+      const c = contenido || {};
+      let lineas = [];
+      if (formato === "Flashcards") lineas = (c.items || []).map((i) => `${i.frente} → ${i.dorso}`);
+      else if (formato === "Tutorial") lineas = (c.pasos || []).map((p) => `${p.titulo}: ${p.explicacion}`);
+      else if (formato === "Quiz") lineas = (c.preguntas || []).map((p) => p.enunciado);
+      else if (formato === "TLDR") lineas = [c.resumen_una_linea, ...(c.puntos_clave || []).map((p) => `${p.titulo}: ${p.detalle}`)];
+      else if (formato === "Guion") lineas = (c.escenas || []).map((e) => e.narracion);
+      return lineas.filter(Boolean).slice(0, 3).map((linea) => recortar(linea, 170));
+    }
+
+    function iniciarComparacion(resultado) {
+      estadoComparacion = { resultado, abierta: null };
+      pintarComparacion();
+    }
+
+    function pintarComparacion() {
+      const { resultado } = estadoComparacion;
+      const versiones = resultado.versiones || [];
+      const formato = (resultado.metadatos || {}).formato_comparado || detectarFormato(versiones[0] || {});
+      const info = infoFormato(formato);
+      resultadoActivo = null;
+      estadoQuiz = null;
+      estadoRepaso = null;
+      document.getElementById("vista-material").innerHTML = `
+        <div class="tarjeta-resultado tarjeta-comparacion">
+          <h2>${formatearTexto((resultado.contenido_adaptado || {}).titulo)}</h2>
+          <p class="intro-resultado">El mismo documento, en ${escaparHtml(info.etiqueta)}, adaptado a dos públicos. Mira cómo cambian el tono, la profundidad y lo que se da por sabido.</p>
+          <div class="columnas-comparacion">
+            ${versiones.map((version, i) => {
+              const m = version.metadatos || {};
+              const anclaje = Math.round(Math.min(1, Math.max(0, Number((version.evaluacion_calidad || {}).anclaje_fuente_score) || 0)) * 100);
+              const contenido = version.contenido_adaptado || {};
+              return `
+                <article class="version-perfil">
+                  <span class="chip perfil-chip">${icono("person")} ${escaparHtml(etiqueta(m.perfil_aplicado))}</span>
+                  <div class="chips-meta" style="margin-top:0">
+                    <span class="chip">${icono("schedule")} ~${escaparHtml(m.tiempo_estimado_estudio_minutos)} min</span>
+                    <span class="chip">${icono("verified")} Fidelidad ${anclaje}%</span>
+                  </div>
+                  <p class="intro">${formatearTexto(contenido.introduccion_contextualizada)}</p>
+                  <ul class="vista-previa">${vistaPrevia(contenido, formato).map((linea) => `<li>${formatearTexto(linea)}</li>`).join("")}</ul>
+                  ${(m.prerrequisitos || []).length ? `<p class="nota-critico" style="margin-top:0">${icono("checklist")}<span><strong>Prerrequisitos:</strong> ${m.prerrequisitos.map(escaparHtml).join(", ")}</span></p>` : ""}
+                  <button type="button" class="boton-secundario" data-accion="abrir-version" data-indice="${i}">${icono(info.icono)} Estudiar esta versión</button>
+                </article>`;
+            }).join("")}
+          </div>
+          <div class="barra-feedback">${htmlValoracion(resultado.id_solicitud)}</div>
+        </div>`;
+      ajustarAltura();
+    }
+
+    function abrirVersion(indice) {
+      const version = (estadoComparacion.resultado.versiones || [])[indice];
+      if (!version) return;
+      estadoComparacion.abierta = indice;
+      const perfil = etiqueta((version.metadatos || {}).perfil_aplicado);
+      montarResultado(document.getElementById("vista-material"), version, {
+        encabezado: `<button type="button" class="boton-secundario volver-comparacion" data-accion="volver-comparacion">${icono("arrow_back")} Volver a la comparación</button>
+          <p class="ayuda" style="margin-top:10px">${icono("person")} Versión para ${escaparHtml(perfil)}</p>`,
+      });
+      document.getElementById("vista-material").scrollIntoView({ block: "start" });
+    }
+
+    // ---------- Preguntale al documento ----------
+
+    function idMaterialActual() {
+      return ultimoResultado ? ultimoResultado.id_solicitud : null;
+    }
+
+    function sugerenciasDePreguntas() {
+      if (!ultimoResultado) return [];
+      const base = ultimoResultado.tipo === "ruta" ? (ultimoResultado.pasos || [])[0]
+        : ultimoResultado.tipo === "comparacion" ? (ultimoResultado.versiones || [])[0] : ultimoResultado;
+      const metadatos = (base && base.metadatos) || {};
+      if (metadatos.formato_generado === "Quiz") return ["¿Cuál es la idea principal del documento?", "¿Qué debería aprender primero?"];
+      const conceptos = (metadatos.conceptos_clave || []).filter((c) => c && c.length <= 60).slice(0, 2);
+      return [...conceptos.map((c) => `Explícame mejor: ${c.replace(/[¿?]/g, "")}`), "¿Cuál es la idea principal del documento?"].slice(0, 3);
+    }
+
+    function htmlMensaje(mensaje) {
+      let html = `<li class="burbuja burbuja-usuario">${escaparHtml(mensaje.pregunta)}</li>`;
+      if (mensaje.error) {
+        html += `<li class="burbuja burbuja-error" role="alert"><strong>${escaparHtml(mensaje.error.titulo || "No se pudo responder")}</strong><br>${escaparHtml(mensaje.error.mensaje || "")}</li>`;
+        return html;
+      }
+      const fuentes = mensaje.fuentes || [];
+      html += `
+        <li class="burbuja burbuja-respuesta ${mensaje.en_documento === false ? "fuera" : ""}">
+          <span>${formatearTexto(mensaje.respuesta)}</span>
+          ${fuentes.length ? `<div class="fuentes-chat">${fuentes.map((f) => `
+            <details class="fuente-chat"><summary>${icono("description")} ${escaparHtml((f.fuente || "").split(" · ").pop())}</summary>
+              <blockquote>${escaparHtml(recortar(f.texto, 420))}</blockquote></details>`).join("")}</div>` : ""}
+        </li>`;
+      return html;
+    }
+
+    function renderizarPreguntas(reconstruir = false) {
+      const zona = document.getElementById("zona-preguntas");
+      const id = idMaterialActual();
+      if (!zona || id === null) return;
+      const mensajes = conversaciones[String(id)] || [];
+      if (reconstruir || !zona.querySelector(".preguntas-doc")) {
+        zona.innerHTML = `
+          <section class="tarjeta-resultado preguntas-doc" aria-labelledby="titulo-preguntas">
+            <h3 class="titulo-seccion" id="titulo-preguntas">${icono("forum")} Pregúntale al documento</h3>
+            <p class="ayuda-preguntas">Responde solo con lo que dice tu documento y te muestra de qué fragmento lo sacó.</p>
+            <ol class="hilo" id="hilo-preguntas" aria-live="polite"></ol>
+            <div class="sugerencias" id="sugerencias-preguntas"></div>
+            <form class="form-pregunta" id="form-pregunta">
+              <input type="text" id="input-pregunta" maxlength="500" autocomplete="off"
+                     placeholder="Ej.: ¿Cuándo conviene usar un NAT Gateway?" aria-label="Tu pregunta sobre el documento">
+              <button type="submit" class="boton-primario">${icono("send")} Preguntar</button>
+            </form>
+            <span class="estado-pregunta" id="estado-pregunta"></span>
+          </section>`;
+      }
+      const pendiente = idPreguntaPendiente !== null && preguntaPendiente
+        ? `<li class="burbuja burbuja-usuario">${escaparHtml(preguntaPendiente)}</li>
+           <li class="burbuja burbuja-pensando" role="status"><div class="marca-cargando" aria-hidden="true">${SVG_MARCA}</div> Buscando en el documento…</li>`
+        : "";
+      document.getElementById("hilo-preguntas").innerHTML = mensajes.map(htmlMensaje).join("") + pendiente;
+      const sugerencias = document.getElementById("sugerencias-preguntas");
+      sugerencias.hidden = mensajes.length > 0 || Boolean(pendiente);
+      sugerencias.innerHTML = sugerenciasDePreguntas().map((texto) =>
+        `<button type="button" class="chip-ajuste" data-accion="sugerencia">${icono("help")} ${escaparHtml(texto)}</button>`).join("");
+      const estado = document.getElementById("estado-pregunta");
+      estado.classList.remove("error");
+      estado.textContent = mensajes.length ? `${mensajes.length} de ${MAX_PREGUNTAS} preguntas` : "";
+      ajustarAltura();
+    }
+
+    function enviarPregunta(texto) {
+      const estado = document.getElementById("estado-pregunta");
+      const pregunta = String(texto || "").trim();
+      const mostrarError = (mensaje) => { estado.textContent = mensaje; estado.classList.add("error"); };
+      if (pregunta.length < 3) { mostrarError("Escribe una pregunta un poco más larga."); return; }
+      if (hayOperacionPendiente()) { mostrarError("Espera a que termine lo que se está preparando."); return; }
+      const idMaterial = idMaterialActual();
+      if ((conversaciones[String(idMaterial)] || []).length >= MAX_PREGUNTAS) { mostrarError(`Llegaste al máximo de ${MAX_PREGUNTAS} preguntas para este material.`); return; }
+      const id = `p-${Date.now()}`;
+      idPreguntaPendiente = id;
+      preguntaPendiente = pregunta;
+      document.getElementById("input-pregunta").value = "";
+      renderizarPreguntas();
+      enviarAccion({ accion: "preguntar", id, id_material: idMaterial, pregunta });
     }
 
     function htmlBarraExportar(formato) {
@@ -916,19 +1764,30 @@
     function renderFlashcards(contenido) {
       const items = contenido.items || [];
       if (items.length === 0) return `<p class="estado-vacio">No se generaron tarjetas para este documento.</p>`;
-      let html = `
-        <div class="barra-herramientas">
-          <span class="ayuda">${icono("touch_app")} Toca una tarjeta o pulsa Enter para ver la respuesta</span>
-          <button type="button" class="boton-secundario" data-accion="voltear-todas" aria-pressed="false">${icono("flip")} Voltear todas</button>
-        </div>
-        <div class="grid-flashcards">`;
-      items.forEach((item, indice) => {
-        html += `
-          <div class="flashcard-3d" role="button" tabindex="0" aria-pressed="false" data-accion="voltear"
-               aria-label="Tarjeta ${indice + 1} de ${items.length}">
+      return `<div id="zona-flashcards"></div>`;
+    }
+
+    function iniciarFlashcards(items, indices = null) {
+      estadoRepaso = {
+        items,
+        visibles: indices || items.map((_, indice) => indice),
+        marcas: {},          // indice -> "dominada" | "repasar"
+        volteadas: new Set(),
+        todasVolteadas: false,
+      };
+      renderizarFlashcards();
+    }
+
+    function htmlTarjeta(item, indice, posicion, total) {
+      const marca = estadoRepaso.marcas[indice];
+      const volteada = estadoRepaso.volteadas.has(indice);
+      return `
+        <div class="tarjeta-repaso ${marca === "dominada" ? "dominada" : ""}">
+          <div class="flashcard-3d ${volteada ? "volteada" : ""}" role="button" tabindex="0" aria-pressed="${volteada}"
+               data-accion="voltear" data-indice="${indice}" aria-label="Tarjeta ${posicion + 1} de ${total}">
             <div class="flashcard-interior">
               <div class="flashcard-cara flashcard-frente">
-                <span class="numero-tarjeta">${indice + 1} / ${items.length}</span>
+                <span class="numero-tarjeta">${posicion + 1} / ${total}</span>
                 <span>${formatearTexto(item.frente)}</span>
                 <span class="icono-voltear">${icono("360")}</span>
               </div>
@@ -937,21 +1796,98 @@
                 ${item.pista_didactica ? `<p class="pista-tarjeta">${icono("lightbulb")}<span>${formatearTexto(item.pista_didactica)}</span></p>` : ""}
               </div>
             </div>
-          </div>`;
-      });
-      return html + `</div>`;
+          </div>
+          <div class="acciones-tarjeta" ${volteada || marca ? "" : "hidden"}>
+            <button type="button" class="boton-secundario repasar" data-accion="marcar" data-marca="repasar" data-indice="${indice}" aria-pressed="${marca === "repasar"}">${icono("replay")} Repasar</button>
+            <button type="button" class="boton-secundario lo-se" data-accion="marcar" data-marca="dominada" data-indice="${indice}" aria-pressed="${marca === "dominada"}">${icono("check")} Lo sé</button>
+          </div>
+        </div>`;
+    }
+
+    function renderizarFlashcards() {
+      const zona = document.getElementById("zona-flashcards");
+      if (!zona || !estadoRepaso) return;
+      const { items, visibles, marcas } = estadoRepaso;
+      const total = visibles.length;
+      const dominadas = visibles.filter((i) => marcas[i] === "dominada").length;
+      const pendientes = visibles.filter((i) => marcas[i] === "repasar").length;
+      const sinMarcar = total - dominadas - pendientes;
+      const terminado = sinMarcar === 0;
+      const esRonda = total < items.length;
+
+      let logro = "";
+      if (terminado) marcarPasoRuta("Flashcards");
+      if (terminado) {
+        logro = pendientes === 0
+          ? `<div class="bloque-logro" role="status">${icono("emoji_events")}
+               <div class="texto-logro"><strong>¡Dominaste ${esRonda ? "todas las pendientes" : `las ${total} tarjetas`}!</strong>Ya puedes pasar al quiz para comprobarlo.</div>
+               <button type="button" class="boton-secundario" data-accion="reiniciar-repaso">${icono("restart_alt")} Empezar de nuevo</button></div>`
+          : `<div class="bloque-logro" role="status">${icono("trending_up")}
+               <div class="texto-logro"><strong>Dominaste ${dominadas} de ${total}</strong>Repasa solo las que te costaron.</div>
+               <button type="button" class="boton-primario" data-accion="repasar-pendientes">${icono("replay")} Repasar ${pendientes} ${pendientes === 1 ? "pendiente" : "pendientes"}</button></div>`;
+      }
+
+      zona.innerHTML = `
+        <div class="barra-herramientas">
+          <span class="ayuda">${icono("touch_app")} Voltea cada tarjeta y marca si ya te la sabes</span>
+          <button type="button" class="boton-secundario" data-accion="voltear-todas" aria-pressed="${estadoRepaso.todasVolteadas}">${icono("flip")} Voltear todas</button>
+        </div>
+        <div class="resumen-repaso">
+          <div class="texto-repaso">
+            <span>${esRonda ? "Ronda de repaso · " : ""}${total} ${total === 1 ? "tarjeta" : "tarjetas"}</span>
+            <span>${dominadas} ${dominadas === 1 ? "dominada" : "dominadas"} · ${pendientes} por repasar</span>
+          </div>
+          <div class="barra-repaso" role="progressbar" aria-label="Tarjetas dominadas" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${dominadas}">
+            <span class="dominadas" style="width:${(dominadas / total) * 100}%"></span>
+            <span class="pendientes" style="width:${(pendientes / total) * 100}%"></span>
+          </div>
+        </div>
+        <div class="grid-flashcards">${visibles.map((indice, posicion) => htmlTarjeta(items[indice], indice, posicion, total)).join("")}</div>
+        ${logro}`;
+      ajustarAltura();
     }
 
     function voltearTarjeta(tarjeta, volteada) {
+      const indice = Number(tarjeta.dataset.indice);
       const estado = volteada ?? !tarjeta.classList.contains("volteada");
       tarjeta.classList.toggle("volteada", estado);
       tarjeta.setAttribute("aria-pressed", String(estado));
+      if (!estadoRepaso) return;
+      if (estado) estadoRepaso.volteadas.add(indice); else estadoRepaso.volteadas.delete(indice);
+      // Los botones "Repasar / Lo sé" aparecen despues de ver la respuesta
+      const acciones = tarjeta.parentElement.querySelector(".acciones-tarjeta");
+      if (acciones && estado) acciones.hidden = false;
+      ajustarAltura();
     }
 
     function voltearTodas(boton) {
       const volteadas = boton.getAttribute("aria-pressed") !== "true";
       boton.setAttribute("aria-pressed", String(volteadas));
+      if (estadoRepaso) estadoRepaso.todasVolteadas = volteadas;
       document.querySelectorAll(".flashcard-3d").forEach((tarjeta) => voltearTarjeta(tarjeta, volteadas));
+    }
+
+    function marcarTarjeta(boton) {
+      const indice = Number(boton.dataset.indice);
+      const marca = boton.dataset.marca;
+      estadoRepaso.marcas[indice] = estadoRepaso.marcas[indice] === marca ? undefined : marca;
+      renderizarFlashcards();
+      const siguiente = document.querySelector(`[data-accion="marcar"][data-indice="${indice}"][data-marca="${marca}"]`);
+      if (siguiente) siguiente.focus({ preventScroll: true });
+    }
+
+    function manejarAccionRepaso(accion) {
+      if (!estadoRepaso) return false;
+      if (accion === "repasar-pendientes") {
+        const pendientes = estadoRepaso.visibles.filter((i) => estadoRepaso.marcas[i] === "repasar");
+        iniciarFlashcards(estadoRepaso.items, pendientes);
+      } else if (accion === "reiniciar-repaso") {
+        iniciarFlashcards(estadoRepaso.items);
+      } else {
+        return false;
+      }
+      document.getElementById("zona-flashcards").scrollIntoView({ block: "nearest" });
+      return true;
     }
 
     // ---------- Tutorial ----------
@@ -971,7 +1907,7 @@
       if (objetivos.length > 0) {
         html += `
           <section class="bloque-objetivos">
-            <h3 class="titulo-seccion">${icono("flag")} Al terminar podras</h3>
+            <h3 class="titulo-seccion">${icono("flag")} Al terminar podrás</h3>
             <ul class="lista-iconos">${objetivos.map((objetivo) => `<li>${icono("check_circle")}<span>${formatearTexto(objetivo)}</span></li>`).join("")}</ul>
           </section>`;
       }
@@ -995,7 +1931,10 @@
             </div>
           </li>`;
       });
-      html += `</ol>`;
+      html += `</ol>
+        <div class="bloque-logro" id="logro-tutorial" role="status" hidden>${icono("emoji_events")}
+          <div class="texto-logro"><strong>¡Completaste el tutorial!</strong>Ponlo a prueba generando un quiz con el mismo documento.</div>
+        </div>`;
       if (contenido.conclusion) {
         html += `<div class="bloque-cierre">${icono("emoji_events")}<div><strong>Para cerrar</strong>${formatearTexto(contenido.conclusion)}</div></div>`;
       }
@@ -1012,6 +1951,10 @@
       const barra = document.getElementById("barra-tutorial");
       barra.setAttribute("aria-valuenow", String(completados));
       barra.querySelector("span").style.width = `${porcentaje}%`;
+      const completo = casillas.length > 0 && completados === casillas.length;
+      barra.classList.toggle("completa", completo);
+      document.getElementById("logro-tutorial").hidden = !completo;
+      ajustarAltura();
     }
 
     // ---------- Quiz ----------
@@ -1121,7 +2064,7 @@
         <div class="acciones-quiz">
           ${botonPrincipal}
           ${botonPista}
-          <span class="atajos">Atajos: <kbd>1</kbd>-<kbd>${pregunta.opciones.length}</kbd> para elegir, <kbd>Enter</kbd> para ${comprobada ? "continuar" : "comprobar"}</span>
+          <span class="atajos">Atajos: <kbd>1</kbd>–<kbd>${pregunta.opciones.length}</kbd> para elegir, <kbd>Enter</kbd> para ${comprobada ? "continuar" : "comprobar"}</span>
         </div>`;
     }
 
@@ -1133,9 +2076,13 @@
       let nivel = "media";
       let titulo = "Vas por buen camino";
       let mensaje = "Repasa las preguntas que fallaste y vuelve a intentarlo.";
-      if (porcentaje >= 90) { nivel = "alta"; titulo = "Dominas el tema"; mensaje = "Respondiste casi todo correctamente."; }
+      if (porcentaje === 100) { nivel = "alta"; titulo = "Dominas el tema"; mensaje = "Respondiste todo correctamente."; }
+      else if (porcentaje >= 90) { nivel = "alta"; titulo = "Dominas el tema"; mensaje = "Respondiste casi todo correctamente."; }
       else if (porcentaje >= 70) { nivel = "alta"; titulo = "Buen resultado"; mensaje = "Tienes claras las ideas principales. Revisa los detalles que fallaste."; }
       else if (porcentaje < 50) { nivel = "baja"; titulo = "Conviene repasar"; mensaje = "Lee las explicaciones de abajo y repasa solo los errores."; }
+      const insignia = porcentaje >= 90
+        ? `<span class="insignia">${icono("workspace_premium")} Insignia: ${porcentaje === 100 ? "puntaje perfecto" : "dominas el tema"}</span>`
+        : "";
 
       const revision = respuestas.map((respuesta, indice) => {
         const elegida = respuesta.pregunta.opciones[respuesta.seleccion];
@@ -1161,22 +2108,24 @@
           <div class="mensaje-quiz">
             <h3 tabindex="-1" data-foco>${titulo}</h3>
             <p>${mensaje}</p>
+            ${insignia}
             <div class="acciones-quiz">
               ${fallos > 0 ? `<button type="button" class="boton-primario" data-accion="repasar">${icono("replay")} Repasar ${fallos} ${fallos === 1 ? "error" : "errores"}</button>` : ""}
               <button type="button" class="${fallos > 0 ? "boton-secundario" : "boton-primario"}" data-accion="reintentar">${icono("restart_alt")} Reintentar todo</button>
             </div>
           </div>
         </div>
-        <ol class="revision-quiz" aria-label="Revision de respuestas">${revision}</ol>`;
+        <ol class="revision-quiz" aria-label="Revisión de respuestas">${revision}</ol>`;
     }
 
     function renderizarQuiz() {
       const zona = document.getElementById("zona-quiz");
       if (!zona || !estadoQuiz) return;
       if (estadoQuiz.preguntas.length === 0) {
-        zona.innerHTML = `<p class="estado-vacio">No se generaron preguntas validas. Prueba a generar el quiz de nuevo.</p>`;
+        zona.innerHTML = `<p class="estado-vacio">No se generaron preguntas válidas. Prueba a generar el quiz de nuevo.</p>`;
       } else if (estadoQuiz.terminado) {
         zona.innerHTML = htmlResultadoQuiz();
+        marcarPasoRuta("Quiz");
       } else {
         zona.innerHTML = htmlPreguntaQuiz();
       }
@@ -1263,11 +2212,11 @@
       if (acciones.length > 0) {
         html += `
           <section class="bloque-acciones">
-            <h3 class="titulo-seccion">${icono("checklist")} Que hacer ahora</h3>
+            <h3 class="titulo-seccion">${icono("checklist")} Qué hacer ahora</h3>
             <ul class="lista-iconos">${acciones.map((accion) => `<li>${icono("task_alt")}<span>${formatearTexto(accion)}</span></li>`).join("")}</ul>
           </section>`;
       }
-      return html || `<p class="estado-vacio">No se genero el resumen para este documento.</p>`;
+      return html || `<p class="estado-vacio">No se generó el resumen para este documento.</p>`;
     }
 
     // ---------- Guion ----------
@@ -1279,8 +2228,8 @@
       let inicio = 0;
       let html = `
         <div class="barra-herramientas">
-          <span class="ayuda">${icono("timer")} Duracion total ${formatearDuracion(total)} en ${escenas.length} escenas</span>
-          <button type="button" class="boton-secundario" data-accion="modo-narracion" aria-pressed="false">${icono("record_voice_over")} Solo narracion</button>
+          <span class="ayuda">${icono("timer")} Duración total ${formatearDuracion(total)} en ${escenas.length} escenas</span>
+          <button type="button" class="boton-secundario" data-accion="modo-narracion" aria-pressed="false">${icono("record_voice_over")} Solo narración</button>
         </div>
         <ol class="linea-tiempo" id="linea-tiempo">`;
       escenas.forEach((escena, indice) => {
@@ -1345,7 +2294,7 @@
       const metadatos = resultado.metadatos || {};
       let md = `# ${contenido.titulo || ""}\n\n`;
       if (contenido.introduccion_contextualizada) md += `${contenido.introduccion_contextualizada}\n\n`;
-      md += `**Perfil:** ${metadatos.perfil_aplicado || ""} · **Formato:** ${metadatos.formato_generado || formato} · **Tiempo estimado:** ~${metadatos.tiempo_estimado_estudio_minutos || 0} min\n\n`;
+      md += `**Perfil:** ${etiqueta(metadatos.perfil_aplicado || "")} · **Formato:** ${metadatos.formato_generado || formato} · **Tiempo estimado:** ~${metadatos.tiempo_estimado_estudio_minutos || 0} min\n\n`;
       if ((metadatos.prerrequisitos || []).length > 0) {
         md += `**Prerrequisitos:** ${metadatos.prerrequisitos.join(", ")}\n\n`;
       }
@@ -1361,7 +2310,7 @@
         });
       } else if (formato === "Tutorial") {
         if ((contenido.objetivos || []).length > 0) {
-          md += `## Al terminar podras\n\n${contenido.objetivos.map((o) => `- ${o}`).join("\n")}\n\n`;
+          md += `## Al terminar podrás\n\n${contenido.objetivos.map((o) => `- ${o}`).join("\n")}\n\n`;
         }
         (contenido.pasos || []).forEach((paso, i) => {
           md += `## Paso ${i + 1}: ${paso.titulo}\n\n${paso.explicacion}\n\n`;
@@ -1376,7 +2325,7 @@
             md += `- [${j === pregunta.indice_correcto ? "x" : " "}] ${opcion}\n`;
           });
           md += "\n";
-          if (pregunta.explicacion) md += `> Explicacion: ${pregunta.explicacion}\n\n`;
+          if (pregunta.explicacion) md += `> Explicación: ${pregunta.explicacion}\n\n`;
         });
       } else if (formato === "TLDR") {
         if (contenido.resumen_una_linea) md += `> ${contenido.resumen_una_linea}\n\n`;
@@ -1384,14 +2333,14 @@
           md += `## ${punto.titulo}\n\n${punto.detalle}\n\n`;
         });
         if ((contenido.acciones_recomendadas || []).length > 0) {
-          md += `## Que hacer ahora\n\n${contenido.acciones_recomendadas.map((a) => `- [ ] ${a}`).join("\n")}\n\n`;
+          md += `## Qué hacer ahora\n\n${contenido.acciones_recomendadas.map((a) => `- [ ] ${a}`).join("\n")}\n\n`;
         }
       } else if (formato === "Guion") {
         let inicio = 0;
         (contenido.escenas || []).forEach((escena, i) => {
           const fin = inicio + (Number(escena.duracion_segundos) || 0);
           md += `## Escena ${i + 1}: ${escena.titulo} (${formatearDuracion(inicio)} - ${formatearDuracion(fin)})\n\n`;
-          md += `**Narracion:** ${escena.narracion}\n\n**Apoyo visual:** ${escena.apoyo_visual}\n\n`;
+          md += `**Narración:** ${escena.narracion}\n\n**Apoyo visual:** ${escena.apoyo_visual}\n\n`;
           inicio = fin;
         });
         if (contenido.cierre) md += `## Cierre\n\n${contenido.cierre}\n\n`;
@@ -1441,7 +2390,7 @@
             ${paso.ejemplo ? `<pre>${escaparHtml(limpiarBloqueCodigo(paso.ejemplo))}</pre>` : ""}
             ${paso.consejo ? `<p><em>Consejo: ${formatearTexto(paso.consejo)}</em></p>` : ""}
           </div>`).join("");
-        cuerpo = (objetivos ? `<h3>Al terminar podras</h3><ul>${objetivos}</ul>` : "") + pasos
+        cuerpo = (objetivos ? `<h3>Al terminar podrás</h3><ul>${objetivos}</ul>` : "") + pasos
           + (contenido.conclusion ? `<p><strong>Para cerrar:</strong> ${formatearTexto(contenido.conclusion)}</p>` : "");
       } else if (formato === "Quiz") {
         cuerpo = (contenido.preguntas || []).map((pregunta, i) => `
@@ -1458,7 +2407,7 @@
           + (contenido.puntos_clave || []).map((punto) => `
             <div class="item-impresion"><h3>${formatearTexto(punto.titulo)}</h3><p>${formatearTexto(punto.detalle)}</p></div>`).join("")
           + ((contenido.acciones_recomendadas || []).length > 0
-            ? `<h3>Que hacer ahora</h3><ul>${contenido.acciones_recomendadas.map((a) => `<li>${formatearTexto(a)}</li>`).join("")}</ul>`
+            ? `<h3>Qué hacer ahora</h3><ul>${contenido.acciones_recomendadas.map((a) => `<li>${formatearTexto(a)}</li>`).join("")}</ul>`
             : "");
       } else if (formato === "Guion") {
         let inicio = 0;
@@ -1467,35 +2416,35 @@
           const html = `
             <div class="item-impresion">
               <h3>Escena ${i + 1}: ${formatearTexto(escena.titulo)} (${formatearDuracion(inicio)} - ${formatearDuracion(fin)})</h3>
-              <p><strong>Narracion:</strong> ${formatearTexto(escena.narracion)}</p>
+              <p><strong>Narración:</strong> ${formatearTexto(escena.narracion)}</p>
               <p><strong>Apoyo visual:</strong> ${formatearTexto(escena.apoyo_visual)}</p>
             </div>`;
           inicio = fin;
           return html;
         }).join("") + (contenido.cierre ? `<p><strong>Cierre:</strong> ${formatearTexto(contenido.cierre)}</p>` : "");
       }
-      return `<h1>${formatearTexto(contenido.titulo)}</h1><p>${formatearTexto(contenido.introduccion_contextualizada)}</p>${cuerpo}`;
+      return `<img class="logo-impresion" src="assets/logo-nuevamente.svg" alt="NuevaMente"><h1>${formatearTexto(contenido.titulo)}</h1><p>${formatearTexto(contenido.introduccion_contextualizada)}</p>${cuerpo}`;
     }
 
     function exportarMarkdown() {
-      if (!ultimoResultado) return;
-      const formato = detectarFormato(ultimoResultado);
-      const md = generarMarkdown(ultimoResultado, formato);
-      descargarArchivo(`${slugArchivo(ultimoResultado.contenido_adaptado.titulo)}.md`, md, "text/markdown;charset=utf-8");
+      if (!resultadoActivo) return;
+      const formato = detectarFormato(resultadoActivo);
+      const md = generarMarkdown(resultadoActivo, formato);
+      descargarArchivo(`${slugArchivo(resultadoActivo.contenido_adaptado.titulo)}.md`, md, "text/markdown;charset=utf-8");
     }
 
     function exportarCsvAnki() {
-      if (!ultimoResultado) return;
-      const formato = detectarFormato(ultimoResultado);
-      const csv = generarCsvAnki(ultimoResultado, formato);
+      if (!resultadoActivo) return;
+      const formato = detectarFormato(resultadoActivo);
+      const csv = generarCsvAnki(resultadoActivo, formato);
       if (!csv) return;
-      descargarArchivo(`${slugArchivo(ultimoResultado.contenido_adaptado.titulo)}-anki.csv`, csv, "text/csv;charset=utf-8");
+      descargarArchivo(`${slugArchivo(resultadoActivo.contenido_adaptado.titulo)}-anki.csv`, csv, "text/csv;charset=utf-8");
     }
 
     function exportarPDF() {
-      if (!ultimoResultado) return;
-      const formato = detectarFormato(ultimoResultado);
-      document.getElementById("zona-impresion").innerHTML = generarHtmlImpresion(ultimoResultado, formato);
+      if (!resultadoActivo) return;
+      const formato = detectarFormato(resultadoActivo);
+      document.getElementById("zona-impresion").innerHTML = generarHtmlImpresion(resultadoActivo, formato);
       window.print();
     }
 
@@ -1511,12 +2460,36 @@
       const accion = objetivo.dataset.accion;
       if (accion === "voltear") voltearTarjeta(objetivo);
       else if (accion === "voltear-todas") voltearTodas(objetivo);
+      else if (accion === "marcar") marcarTarjeta(objetivo);
+      else if (accion === "repasar-pendientes" || accion === "reiniciar-repaso") manejarAccionRepaso(accion);
+      else if (accion === "ir-crear") { cambiarPestaña("crear"); zonaDrop.focus({ preventScroll: true }); }
       else if (accion === "modo-narracion") alternarModoNarracion(objetivo);
       else if (accion === "exportar-md") exportarMarkdown();
       else if (accion === "exportar-csv") exportarCsvAnki();
       else if (accion === "exportar-pdf") exportarPDF();
       else if (accion === "regenerar") regenerar();
+      else if (accion === "abrir-ajustes") abrirAjustes();
+      else if (accion === "ajuste") alternarAjuste(objetivo);
+      else if (accion === "valorar") valorar(objetivo);
+      else if (accion === "ir-paso-ruta") irAPasoRuta(Number(objetivo.dataset.paso));
+      else if (accion === "completar-paso-ruta") completarPasoRuta();
+      else if (accion === "abrir-version") abrirVersion(Number(objetivo.dataset.indice));
+      else if (accion === "volver-comparacion") { pintarComparacion(); document.getElementById("vista-material").scrollIntoView({ block: "start" }); }
+      else if (accion === "sugerencia") enviarPregunta(objetivo.textContent);
       else if (accion !== "completar-paso") manejarAccionQuiz(accion);
+    });
+
+    contenedorResultado.addEventListener("submit", (evento) => {
+      if (evento.target.id !== "form-pregunta") return;
+      evento.preventDefault();
+      enviarPregunta(document.getElementById("input-pregunta").value);
+    });
+
+    contenedorResultado.addEventListener("input", (evento) => {
+      if (evento.target.id === "input-pregunta") {
+        const estado = document.getElementById("estado-pregunta");
+        if (estado && estado.classList.contains("error")) { estado.classList.remove("error"); estado.textContent = ""; }
+      }
     });
 
     contenedorResultado.addEventListener("change", (evento) => {
@@ -1550,31 +2523,197 @@
       }
     });
 
+    // ---------- Mis materiales ----------
+
+    function formatearHora(milisegundos) {
+      try {
+        return new Date(milisegundos).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function renderizarMateriales() {
+      const contenedor = document.getElementById("materiales");
+      const contador = document.getElementById("contador-materiales");
+      contador.hidden = historial.length === 0;
+      contador.textContent = String(historial.length);
+      if (historial.length === 0) {
+        contenedor.innerHTML = `
+          <div class="tarjeta-resultado vacio-marca">
+            <img class="isotipo-vacio" src="assets/isotipo-nuevamente.svg" alt="" width="72" height="72">
+            <h2>Aquí se guardan tus materiales</h2>
+            <p>Cada contenido que generes en esta sesión queda a mano para volver a estudiarlo sin generarlo otra vez.</p>
+            <button type="button" class="boton-primario" data-accion="ir-crear">${icono("upload_file")} Crear contenido</button>
+          </div>`;
+        return;
+      }
+      const abierto = ultimoResultado && ultimoResultado.id_solicitud;
+      contenedor.innerHTML = `
+        <p class="nota-materiales">${icono("info")} Se guardan los últimos ${historial.length === 1 ? "materiales" : `${historial.length} materiales`} de esta sesión. Al cerrar o recargar la página se pierden: exporta los que quieras conservar.</p>
+        <div class="lista-materiales">
+          ${historial.map((entrada) => {
+            const info = infoFormato(entrada.formato);
+            const esAbierto = entrada.id === abierto;
+            return `
+              <article class="material ${esAbierto ? "abierto" : ""}">
+                <div class="cabecera-material">
+                  <span class="icono-material">${icono(info.icono)}</span>
+                  <h3>${escaparHtml(entrada.titulo)}</h3>
+                </div>
+                <span class="detalle-material">${escaparHtml(info.etiqueta)} · ${escaparHtml(etiqueta(entrada.perfil))} · ${escaparHtml(etiqueta(entrada.nivel))}${(entrada.resultado && entrada.resultado.metadatos && entrada.resultado.metadatos.idioma_salida && entrada.resultado.metadatos.idioma_salida !== "Español") ? ` · ${escaparHtml(entrada.resultado.metadatos.idioma_salida)}` : ""}</span>
+                <span class="detalle-material">${icono("description")} ${escaparHtml(entrada.archivo)} · ${escaparHtml(formatearHora(entrada.creado_ms))}</span>
+                <button type="button" class="${esAbierto ? "boton-secundario" : "boton-primario"}" data-accion="abrir-material" data-id="${escaparHtml(entrada.id)}">
+                  ${icono(esAbierto ? "visibility" : "open_in_new")} ${esAbierto ? "Abierto ahora" : "Abrir"}
+                </button>
+              </article>`;
+          }).join("")}
+        </div>`;
+    }
+
+    document.getElementById("materiales").addEventListener("click", (evento) => {
+      const objetivo = evento.target.closest("[data-accion]");
+      if (!objetivo) return;
+      if (objetivo.dataset.accion === "ir-crear") { cambiarPestaña("crear"); zonaDrop.focus({ preventScroll: true }); return; }
+      if (objetivo.dataset.accion !== "abrir-material" || hayOperacionPendiente()) return;
+      const entrada = historial.find((e) => String(e.id) === objetivo.dataset.id);
+      if (!entrada) return;
+      ultimaClaveResultado = JSON.stringify(entrada.resultado);
+      mostrarResultado(entrada.resultado);
+    });
+
+    // ---------- Tema (claro / oscuro) ----------
+
+    const CLAVE_TEMA = "nuevamente-tema";
+    const botonTema = document.getElementById("btn-tema");
+    let temaSincronizado = false;  // el primer render de Streamlit dice que tema tiene la sesion
+
+    function leerPreferenciaTema() {
+      try { return localStorage.getItem(CLAVE_TEMA); } catch (e) { return null; }
+    }
+
+    function guardarPreferenciaTema(tema) {
+      try { localStorage.setItem(CLAVE_TEMA, tema); } catch (e) { /* sin almacenamiento: solo dura la sesion */ }
+    }
+
+    function pintarTema(tema) {
+      const oscuro = tema === "oscuro";
+      document.documentElement.dataset.tema = oscuro ? "oscuro" : "claro";
+      botonTema.setAttribute("aria-checked", String(oscuro));
+      botonTema.querySelector(".material-symbols-rounded").textContent = oscuro ? "light_mode" : "dark_mode";
+    }
+
+    // Streamlit tambien cambia el fondo de su pagina. Va por la cola: si hay una generacion o una
+    // pregunta en curso, el aviso espera a que termine (avisar antes la interrumpiria).
+    function avisarTemaAStreamlit(tema) {
+      for (let i = colaAcciones.length - 1; i >= 0; i--) {
+        if (colaAcciones[i].accion === "tema") colaAcciones.splice(i, 1);  // solo cuenta el ultimo cambio
+      }
+      enviarAccion({ accion: "tema", tema, id: `tema-${Date.now()}` });
+    }
+
+    function cambiarTema(tema) {
+      pintarTema(tema);
+      guardarPreferenciaTema(tema);
+      avisarTemaAStreamlit(tema);
+    }
+
+    function sincronizarTema(temaSesion) {
+      if (temaSincronizado) return;
+      temaSincronizado = true;
+      const preferido = leerPreferenciaTema();
+      if (preferido === "oscuro" || preferido === "claro") {
+        pintarTema(preferido);
+        if (preferido !== temaSesion) avisarTemaAStreamlit(preferido);
+      } else {
+        pintarTema(temaSesion === "oscuro" ? "oscuro" : "claro");
+      }
+    }
+
+    botonTema.addEventListener("click", () => {
+      cambiarTema(document.documentElement.dataset.tema === "oscuro" ? "claro" : "oscuro");
+    });
+    pintarTema(document.documentElement.dataset.tema);
+
+    // ---------- Fuente de iconos ----------
+
+    function marcarIconosListos() { document.documentElement.classList.add("iconos-listos"); ajustarAltura(); }
+    if (document.fonts && document.fonts.load) {
+      document.fonts.load('24px "Material Symbols Rounded"', "home")
+        .then((caras) => { if (caras.length > 0) marcarIconosListos(); })
+        .catch(() => {});
+    } else {
+      marcarIconosListos();
+    }
+
     // ---------- Render desde Streamlit ----------
 
     window.addEventListener("message", (evento) => {
+      // Solo se aceptan datos de la pagina de Streamlit que contiene al componente:
+      // cualquier otra ventana o iframe que envie mensajes se ignora
+      if (evento.source !== window.parent) return;
       if (!evento.data || evento.data.type !== "streamlit:render") return;
       const { opciones, resultado, error } = evento.data.args;
+      sincronizarTema(evento.data.args.tema);
       llenarSelect("perfil", opciones.perfiles);
       llenarSelectorFormato(opciones.formatos);
       llenarSelect("nicho", opciones.nichos);
       llenarSelect("nivel", opciones.niveles);
+      llenarSelect("idioma", opciones.idiomas || ["Español"]);
+      actualizarPerfilB();
+      actualizarPasos();
+      esperandoRender = false;
+      clearTimeout(temporizadorRender);
+      valoraciones = { ...(evento.data.args.valoraciones || {}), ...valoracionesLocalesPendientes() };
+
+      const nuevoHistorial = evento.data.args.historial || [];
+      const nuevaClaveHistorial = nuevoHistorial.map((entrada) => entrada.id).join(",");
+      if (nuevaClaveHistorial !== claveHistorial) {
+        claveHistorial = nuevaClaveHistorial;
+        historial = nuevoHistorial;
+        renderizarMateriales();
+      }
 
       if (error && error.id !== ultimoIdError) {
         ultimoIdError = error.id;
         if (error.id === idSolicitudPendiente) {
           idSolicitudPendiente = null;
           ponerCargando(false);
-          ultimaClaveResultado = null;
         }
-        detenerAnimacionCarga();
+        // "Estudiar" quedo mostrando la tarjeta de carga: se vuelve al ultimo resultado valido
+        // (o al estado vacio) sin saltar de pestaña, porque el aviso esta en "Crear contenido"
+        ultimaClaveResultado = resultado ? JSON.stringify(resultado) : null;
+        mostrarResultado(resultado, false);
         mostrarAviso(error.titulo || "No se pudo generar el contenido", error.mensaje, error.detalle || "");
         cambiarPestaña("crear");
       }
 
       if (resultado && resultado.id_solicitud === idSolicitudPendiente) {
         idSolicitudPendiente = null;
+        idUltimaGeneracion = resultado.id_solicitud;
+        ajustesElegidos = new Set();
         ponerCargando(false);
+      }
+      if ((error && accionEnCurso === error.id) || (resultado && accionEnCurso === resultado.id_solicitud)) accionEnCurso = null;
+
+      // Conversaciones: solo se redibuja el hilo, nunca el material (asi no se pierde el avance)
+      const nuevasConversaciones = evento.data.args.conversaciones || {};
+      const nuevaClaveConversaciones = JSON.stringify(nuevasConversaciones);
+      if (nuevaClaveConversaciones !== claveConversaciones) {
+        claveConversaciones = nuevaClaveConversaciones;
+        conversaciones = nuevasConversaciones;
+        const respondida = idPreguntaPendiente !== null && Object.values(conversaciones)
+          .some((mensajes) => mensajes.some((mensaje) => mensaje.id === idPreguntaPendiente));
+        if (respondida) {
+          if (accionEnCurso === idPreguntaPendiente) accionEnCurso = null;
+          idPreguntaPendiente = null;
+          preguntaPendiente = "";
+        }
+        renderizarPreguntas();
+        if (respondida) {
+          const input = document.getElementById("input-pregunta");
+          if (input) input.focus({ preventScroll: true });
+        }
       }
 
       // Solo se redibuja si llega un resultado nuevo: asi no se pierde el avance del quiz ni las tarjetas volteadas
@@ -1583,33 +2722,82 @@
         ultimaClaveResultado = clave;
         mostrarResultado(resultado);
       }
+      despacharCola();
       ajustarAltura();
     });
+
+    // Una valoracion recien hecha se respeta aunque el servidor todavia no la haya guardado
+    function valoracionesLocalesPendientes() {
+      const locales = {};
+      colaAcciones.filter((a) => a.accion === "valorar").forEach((a) => { locales[String(a.id_material)] = a.valor; });
+      return locales;
+    }
 
     // ---------- Carga de archivo ----------
 
     const zonaDrop = document.getElementById("zona-drop");
+    const cargaArchivo = document.getElementById("carga-archivo");
     const inputArchivo = document.getElementById("archivo");
 
     function extensionValida(archivo) {
-      return EXTENSIONES_VALIDAS.includes(archivo.name.toLowerCase().split(".").pop());
+      const partes = archivo.name.toLowerCase().split(".");
+      return partes.length > 1 && EXTENSIONES_VALIDAS.includes(partes.pop());
+    }
+
+    function formatearPeso(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    function actualizarPasos() {
+      const hecho = {
+        1: Boolean(inputArchivo.files[0]),
+        2: Boolean(formatoSeleccionado()),
+        3: ["perfil", "nicho", "nivel", "idioma"].every((id) => document.getElementById(id).value),
+      };
+      document.querySelectorAll(".paso-form[data-paso]").forEach((paso) => {
+        const listo = hecho[paso.dataset.paso];
+        paso.classList.toggle("hecho", listo);
+        paso.querySelector(".numero-form").innerHTML = listo ? icono("check") : paso.dataset.paso;
+      });
     }
 
     function actualizarNombreArchivo() {
       const archivo = inputArchivo.files[0];
-      zonaDrop.classList.toggle("con-archivo", Boolean(archivo));
-      document.getElementById("icono-archivo").textContent = archivo ? "task" : "description";
-      document.getElementById("nombre-archivo").textContent = archivo ? archivo.name : TEXTO_ZONA_DROP;
-      if (archivo) ocultarAviso();
+      zonaDrop.hidden = Boolean(archivo);
+      document.getElementById("chip-archivo").hidden = !archivo;
+      if (archivo) {
+        const extension = archivo.name.toLowerCase().split(".").pop();
+        const proporcion = archivo.size / TAMANO_MAXIMO_BYTES;
+        const porcentaje = Math.min(100, Math.round(proporcion * 100));
+        const textoPorcentaje = proporcion > 0 && porcentaje < 1 ? "menos del 1%" : `${porcentaje}%`;
+        document.getElementById("tipo-archivo").textContent = extension.toUpperCase();
+        document.getElementById("nombre-chip").textContent = archivo.name;
+        document.getElementById("nombre-chip").title = archivo.name;
+        document.getElementById("peso-chip").textContent = `${formatearPeso(archivo.size)} · ${textoPorcentaje} del límite de 10 MB`;
+        document.getElementById("barra-peso").style.width = `${Math.max(2, porcentaje)}%`;
+        ocultarAviso();
+      }
+      actualizarPasos();
+      ajustarAltura();
+    }
+
+    function quitarArchivo() {
+      inputArchivo.value = "";
+      actualizarNombreArchivo();
+      zonaDrop.focus();
     }
 
     zonaDrop.addEventListener("click", () => inputArchivo.click());
     zonaDrop.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputArchivo.click(); }
     });
-    zonaDrop.addEventListener("dragover", (e) => { e.preventDefault(); zonaDrop.classList.add("sobre-zona"); });
-    zonaDrop.addEventListener("dragleave", () => zonaDrop.classList.remove("sobre-zona"));
-    zonaDrop.addEventListener("drop", (e) => {
+    document.getElementById("btn-cambiar-archivo").addEventListener("click", () => inputArchivo.click());
+    document.getElementById("btn-quitar-archivo").addEventListener("click", quitarArchivo);
+    cargaArchivo.addEventListener("dragover", (e) => { e.preventDefault(); zonaDrop.classList.add("sobre-zona"); });
+    cargaArchivo.addEventListener("dragleave", () => zonaDrop.classList.remove("sobre-zona"));
+    cargaArchivo.addEventListener("drop", (e) => {
       e.preventDefault();
       zonaDrop.classList.remove("sobre-zona");
       const archivo = e.dataTransfer.files[0];
@@ -1622,46 +2810,76 @@
       actualizarNombreArchivo();
     });
     inputArchivo.addEventListener("change", actualizarNombreArchivo);
+    document.getElementById("formato").addEventListener("change", actualizarPasos);
 
-    function lanzarGeneracion(datos, regenerar) {
+    function actualizarPerfilB() {
+      const selectB = document.getElementById("perfil-b");
+      const perfilA = document.getElementById("perfil").value;
+      const perfiles = [...document.getElementById("perfil").options].map((o) => o.value);
+      if (!perfilA || perfiles.length === 0) return;
+      const anterior = selectB.value;
+      const opciones = perfiles.filter((perfil) => perfil !== perfilA);
+      const claveOpciones = opciones.join("|");
+      if (selectB.dataset.opciones !== claveOpciones) {
+        selectB.dataset.opciones = claveOpciones;
+        selectB.innerHTML = opciones.map((perfil) => `<option value="${escaparHtml(perfil)}">con ${escaparHtml(etiqueta(perfil))}</option>`).join("");
+        // Por defecto, el publico mas distinto: principiante contra lider tecnico
+        const contraste = perfilA === "Principiante" ? "Lider Tecnico" : "Principiante";
+        selectB.value = opciones.includes(anterior) ? anterior : contraste;
+      }
+    }
+    document.getElementById("perfil").addEventListener("change", actualizarPerfilB);
+
+    function lanzarGeneracion(accion, datos, { regenerar = false, ajustes = [] } = {}) {
       const id = Date.now();
       idSolicitudPendiente = id;
-      ultimaSolicitud = datos;
+      estadoRepaso = null;
+      if (accion === "generar") ultimaSolicitud = datos;
       ponerCargando(true);
-      mostrarCargando(datos.formato);
+      mostrarCargando(accion, datos);
       cambiarPestaña("estudiar");
-      enviarAStreamlit("streamlit:setComponentValue", {
-        value: { accion: "generar", id, regenerar, ...datos },
-        dataType: "json",
-      });
+      enviarAccion({ accion, id, regenerar, ajustes, ...datos });
       ajustarAltura();
     }
 
     function regenerar() {
-      if (!ultimaSolicitud || idSolicitudPendiente !== null) return;
-      lanzarGeneracion(ultimaSolicitud, true);
+      if (!ultimaSolicitud || hayOperacionPendiente()) return;
+      lanzarGeneracion("generar", ultimaSolicitud, { regenerar: true, ajustes: [...ajustesElegidos] });
     }
 
-    document.getElementById("btn-generar").addEventListener("click", () => {
+    // Valida el formulario, lee el archivo y entrega los datos comunes a las tres acciones
+    function conDatosDelFormulario(alListo) {
       const archivo = inputArchivo.files[0];
       if (!archivo) { mostrarAviso("Falta el documento", "Sube un PDF, MD o TXT para generar el contenido."); return; }
       if (!extensionValida(archivo)) { mostrarAviso("Formato no soportado", `"${archivo.name}" no es PDF, MD ni TXT.`); return; }
+      if (archivo.size > TAMANO_MAXIMO_BYTES) { mostrarAviso("Archivo demasiado grande", `"${archivo.name}" pesa más de 10 MB. Prueba con un documento más corto.`); return; }
+      if (archivo.size === 0) { mostrarAviso("Archivo vacío", `"${archivo.name}" no tiene contenido.`); return; }
       const formato = formatoSeleccionado();
-      if (!formato) { mostrarAviso("Falta el formato", "Elige que tipo de contenido quieres generar."); return; }
+      if (!formato) { mostrarAviso("Falta el formato", "Elige qué tipo de contenido quieres generar."); return; }
+      if (hayOperacionPendiente()) { mostrarAviso("Ya hay algo en preparación", "Espera a que termine para empezar otro material."); return; }
       ocultarAviso();
       const lector = new FileReader();
-      lector.onerror = () => mostrarAviso("No se pudo leer el archivo", "Vuelve a seleccionarlo e intenta de nuevo.");
-      lector.onload = () => {
-        lanzarGeneracion({
-          archivo_nombre: archivo.name,
-          archivo_base64: lector.result.split(",")[1],
-          perfil: document.getElementById("perfil").value,
-          formato,
-          nicho: document.getElementById("nicho").value,
-          nivel: document.getElementById("nivel").value,
-        }, false);
-      };
+      lector.onerror = () => mostrarAviso("No se pudo leer el archivo", "Vuelve a seleccionarlo e inténtalo de nuevo.");
+      lector.onload = () => alListo({
+        archivo_nombre: archivo.name,
+        archivo_base64: lector.result.split(",")[1],
+        perfil: document.getElementById("perfil").value,
+        formato,
+        nicho: document.getElementById("nicho").value,
+        nivel: document.getElementById("nivel").value,
+        idioma: document.getElementById("idioma").value || "Español",
+      });
       lector.readAsDataURL(archivo);
+    }
+
+    document.getElementById("btn-generar").addEventListener("click", () => {
+      conDatosDelFormulario((datos) => lanzarGeneracion("generar", datos));
+    });
+    document.getElementById("btn-ruta").addEventListener("click", () => {
+      conDatosDelFormulario((datos) => lanzarGeneracion("ruta", datos));
+    });
+    document.getElementById("btn-comparar").addEventListener("click", () => {
+      conDatosDelFormulario((datos) => lanzarGeneracion("comparar", { ...datos, perfil_b: document.getElementById("perfil-b").value }));
     });
 
     document.addEventListener("mousemove", (e) => {
@@ -1674,6 +2892,9 @@
     // El alto del iframe sigue al contenido (tarjetas volteadas, pasos del quiz, fuentes que cargan tarde)
     new ResizeObserver(ajustarAltura).observe(document.body);
 
+    document.getElementById("resultado").innerHTML = HTML_ESTADO_VACIO;
+    renderizarMateriales();
+    actualizarPasos();
     enviarAStreamlit("streamlit:componentReady", { apiVersion: 1 });
     ajustarAltura();
   </script>

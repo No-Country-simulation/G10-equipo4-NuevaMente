@@ -1,15 +1,27 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-import os
+import logging
 import re
-from typing import Literal
+import unicodedata
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 PerfilDestinatario = Literal["Principiante", "Junior", "Lider Tecnico", "Ejecutivo"]
 FormatoSalida = Literal["Flashcards", "Tutorial", "Quiz", "TLDR", "Guion"]
 NichoSector = Literal["General", "Fintech", "Salud", "E-commerce"]
 NivelDetalle = Literal["Didactico", "Intermedio", "Profundo"]
+IdiomaSalida = Literal["Español", "Português", "English"]
+AjusteRegeneracion = Literal["mas_ejemplos", "mas_corto", "mas_tecnico", "menos_jerga", "mas_elementos"]
+
+# Instruccion extra que recibe el redactor por cada ajuste pedido al regenerar
+INSTRUCCIONES_AJUSTE: dict[str, str] = {
+    "mas_ejemplos": "Incluye mas ejemplos concretos y practicos tomados de los hallazgos.",
+    "mas_corto": "Se mas breve: frases cortas y solo lo esencial.",
+    "mas_tecnico": "Usa un tono mas tecnico y preciso, con la terminologia correcta del documento.",
+    "menos_jerga": "Evita la jerga tecnica; si un termino es imprescindible, explicalo con palabras simples.",
+    "mas_elementos": "Genera la cantidad maxima de elementos permitida para este formato.",
+}
 
 
 class Solicitud(BaseModel):
@@ -19,6 +31,8 @@ class Solicitud(BaseModel):
     formato_salida: FormatoSalida
     nicho_sector: NichoSector
     nivel_detalle: NivelDetalle
+    idioma_salida: IdiomaSalida = "Español"
+    ajustes: list[AjusteRegeneracion] = Field(default_factory=list, max_length=5)
 
 
 class Chunk(BaseModel):
@@ -32,44 +46,48 @@ class Metadatos(BaseModel):
     tiempo_estimado_estudio_minutos: int
     conceptos_clave: list[str]
     prerrequisitos: list[str]
+    idioma_salida: str = "Español"
+
+
+TextoNoVacio = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
 class ItemFlashcard(BaseModel):
-    frente: str
-    dorso: str
+    frente: TextoNoVacio
+    dorso: TextoNoVacio
     pista_didactica: str
 
 
 class ContenidoAdaptado(BaseModel):
-    titulo: str
-    introduccion_contextualizada: str
-    items: list[ItemFlashcard]
+    titulo: TextoNoVacio
+    introduccion_contextualizada: TextoNoVacio
+    items: list[ItemFlashcard] = Field(min_length=1)
 
 
 class PasoTutorial(BaseModel):
-    titulo: str
-    explicacion: str
+    titulo: TextoNoVacio
+    explicacion: TextoNoVacio
     ejemplo: str = Field(default="", description="Codigo o ejemplo concreto. Vacio si no aplica.")
     consejo: str = Field(default="", description="Consejo practico o error comun a evitar. Vacio si no aplica.")
 
 
 class ContenidoTutorial(BaseModel):
-    titulo: str
-    introduccion_contextualizada: str
-    objetivos: list[str] = Field(description="Lo que el lector sabra hacer al terminar. Entre 2 y 5.")
+    titulo: TextoNoVacio
+    introduccion_contextualizada: TextoNoVacio
+    objetivos: list[TextoNoVacio] = Field(description="Lo que el lector sabra hacer al terminar. Entre 2 y 5.")
     pasos: list[PasoTutorial] = Field(min_length=1)
-    conclusion: str
+    conclusion: TextoNoVacio
 
 
 class PreguntaQuiz(BaseModel):
-    enunciado: str
-    opciones: list[str] = Field(
+    enunciado: TextoNoVacio
+    opciones: list[TextoNoVacio] = Field(
         min_length=2,
         max_length=5,
         description="Opciones de respuesta sin letras ni numeros al inicio. Para verdadero/falso usa ['Verdadero', 'Falso'].",
     )
     indice_correcto: int = Field(ge=0, description="Posicion (empezando en 0) de la opcion correcta dentro de opciones.")
-    explicacion: str = Field(description="Por que la respuesta correcta lo es, citando la fuente.")
+    explicacion: TextoNoVacio = Field(description="Por que la respuesta correcta lo es, citando la fuente.")
     pista: str = Field(default="", description="Ayuda breve que no revela la respuesta.")
 
     @model_validator(mode="after")
@@ -83,36 +101,36 @@ class PreguntaQuiz(BaseModel):
 
 
 class ContenidoQuiz(BaseModel):
-    titulo: str
-    introduccion_contextualizada: str
+    titulo: TextoNoVacio
+    introduccion_contextualizada: TextoNoVacio
     preguntas: list[PreguntaQuiz] = Field(min_length=1)
 
 
 class PuntoClave(BaseModel):
-    titulo: str
-    detalle: str
+    titulo: TextoNoVacio
+    detalle: TextoNoVacio
 
 
 class ContenidoTLDR(BaseModel):
-    titulo: str
-    introduccion_contextualizada: str
-    resumen_una_linea: str = Field(description="La idea central en una sola frase.")
+    titulo: TextoNoVacio
+    introduccion_contextualizada: TextoNoVacio
+    resumen_una_linea: TextoNoVacio = Field(description="La idea central en una sola frase.")
     puntos_clave: list[PuntoClave] = Field(min_length=1)
-    acciones_recomendadas: list[str] = Field(default_factory=list)
+    acciones_recomendadas: list[TextoNoVacio] = Field(default_factory=list)
 
 
 class EscenaGuion(BaseModel):
-    titulo: str
-    narracion: str = Field(description="Texto que se lee en voz alta.")
-    apoyo_visual: str = Field(description="Que se muestra en pantalla mientras se narra.")
+    titulo: TextoNoVacio
+    narracion: TextoNoVacio = Field(description="Texto que se lee en voz alta.")
+    apoyo_visual: TextoNoVacio = Field(description="Que se muestra en pantalla mientras se narra.")
     duracion_segundos: int = Field(ge=5, le=600)
 
 
 class ContenidoGuion(BaseModel):
-    titulo: str
-    introduccion_contextualizada: str
+    titulo: TextoNoVacio
+    introduccion_contextualizada: TextoNoVacio
     escenas: list[EscenaGuion] = Field(min_length=1)
-    cierre: str = Field(description="Llamado a la accion o mensaje final.")
+    cierre: TextoNoVacio = Field(description="Llamado a la accion o mensaje final.")
 
 
 Contenido = ContenidoAdaptado | ContenidoTutorial | ContenidoQuiz | ContenidoTLDR | ContenidoGuion
@@ -134,6 +152,16 @@ class EvaluacionCalidad(BaseModel):
     observaciones: str = Field(description="Maximo 2 frases.")
 
 
+class RespuestaPregunta(BaseModel):
+    """Respuesta a una pregunta libre sobre el documento, citando los fragmentos usados."""
+
+    respuesta: TextoNoVacio = Field(description="Respuesta breve (maximo 4 frases) basada solo en los fragmentos.")
+    fragmentos_usados: list[int] = Field(
+        default_factory=list, description="Numeros de los fragmentos que respaldan la respuesta, por ejemplo [1, 3]."
+    )
+    en_documento: bool = Field(description="false si la respuesta no esta en los fragmentos.")
+
+
 class AlmacenamientoOCI(BaseModel):
     bucket: str
     objeto_id: str
@@ -150,8 +178,13 @@ class Respuesta(BaseModel):
 
 
 def _generar_doc_id(titulo: str) -> str:
-    slug = re.sub(r"[^a-zA-Z0-9]+", "-", titulo).strip("-").lower()
-    return slug[:60] or "documento"
+    # Se usa como nombre de coleccion en ChromaDB: 3 a 63 caracteres [a-z0-9-] que
+    # empiecen y terminen en letra o numero. Las tildes se quitan en vez de perder la letra.
+    sin_tildes = unicodedata.normalize("NFKD", titulo).encode("ascii", "ignore").decode("ascii")
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", sin_tildes).strip("-").lower()[:60].strip("-")
+    if len(slug) < 3:
+        slug = f"doc-{slug}".strip("-") if slug else "documento"
+    return slug
 
 
 def _resumir_contenido(contenido: Contenido) -> tuple[int, list[str]]:
@@ -169,9 +202,9 @@ def _resumir_contenido(contenido: Contenido) -> tuple[int, list[str]]:
 
 _PRERREQUISITOS_POR_PERFIL: dict[str, list[str]] = {
     "Principiante": ["Ninguno: el contenido se explica desde cero"],
-    "Junior": ["Conceptos basicos de programacion y uso de terminal"],
-    "Lider Tecnico": ["Experiencia previa disenando o manteniendo arquitecturas de software"],
-    "Ejecutivo": ["Ninguno tecnico: se explica en terminos de negocio"],
+    "Junior": ["Conceptos básicos de programación y uso de terminal"],
+    "Lider Tecnico": ["Experiencia previa diseñando o manteniendo arquitecturas de software"],
+    "Ejecutivo": ["Ninguno técnico: se explica en términos de negocio"],
 }
 
 
@@ -189,6 +222,7 @@ def procesar(solicitud: Solicitud, usar_cache: bool = True) -> Respuesta:
     from nuevamente import cache
     from nuevamente.agentes import generar
     from nuevamente.almacenamiento import guardar
+    from nuevamente.config import leer_configuracion
     from nuevamente.rag import indexar, recuperar
 
     doc_id = _generar_doc_id(solicitud.documento_titulo)
@@ -206,11 +240,15 @@ def procesar(solicitud: Solicitud, usar_cache: bool = True) -> Respuesta:
 
     tiempo_estimado, conceptos_clave = _resumir_contenido(contenido)
 
-    clave = f"{doc_id}-{solicitud.perfil_destinatario}-{solicitud.formato_salida}.json".lower()
+    clave = (
+        f"generados_nuevamente/{doc_id}-{solicitud.perfil_destinatario}-"
+        f"{solicitud.formato_salida}.json"
+    ).lower()
     try:
         guardar(clave, contenido.model_dump_json().encode("utf-8"))
         status_upload = "completado"
-    except Exception:  # noqa: BLE001
+    except Exception:  # guardar en la nube es opcional: nunca debe tumbar la generacion
+        logging.getLogger(__name__).warning("No se pudo guardar el resultado en el almacenamiento", exc_info=True)
         status_upload = "fallido"
 
     return Respuesta(
@@ -221,11 +259,12 @@ def procesar(solicitud: Solicitud, usar_cache: bool = True) -> Respuesta:
             tiempo_estimado_estudio_minutos=tiempo_estimado,
             conceptos_clave=conceptos_clave,
             prerrequisitos=_prerrequisitos(solicitud),
+            idioma_salida=solicitud.idioma_salida,
         ),
         contenido_adaptado=contenido,
         evaluacion_calidad=evaluacion,
         almacenamiento_oci=AlmacenamientoOCI(
-            bucket=os.environ.get("OCI_BUCKET_NAME", ""),
+            bucket=leer_configuracion("SUPABASE_BUCKET", "") or "",
             objeto_id=clave,
             status_upload=status_upload,
         ),

@@ -1,35 +1,43 @@
-﻿from __future__ import annotations
+"""Almacenamiento de documentos y resultados en Supabase Storage."""
 
-import os
+from __future__ import annotations
 
-import oci
+from typing import TYPE_CHECKING
 
-_cliente: oci.object_storage.ObjectStorageClient | None = None
+from nuevamente.config import requerir_configuracion
+
+if TYPE_CHECKING:
+    from supabase import Client
+
+_cliente: Client | None = None
 
 
-def _obtener_cliente() -> oci.object_storage.ObjectStorageClient:
-    global _cliente
+def _obtener_cliente() -> Client:
+    global _cliente  # cliente unico perezoso, se crea al primer uso
     if _cliente is None:
-        try:
-            config = oci.config.from_file()
-            _cliente = oci.object_storage.ObjectStorageClient(config)
-        except oci.exceptions.ConfigFileNotFound:
-            signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
-            _cliente = oci.object_storage.ObjectStorageClient(config={}, signer=signer)
+        # Import perezoso: la app y las pruebas cargan sin necesitar credenciales ni red
+        from supabase import create_client
+
+        _cliente = create_client(requerir_configuracion("SUPABASE_URL"), requerir_configuracion("SUPABASE_KEY"))
     return _cliente
 
 
-def guardar(clave: str, contenido: bytes) -> str:
+def _obtener_bucket() -> str:
+    return requerir_configuracion("SUPABASE_BUCKET")
+
+
+def guardar(clave: str, contenido: bytes, content_type: str = "application/json") -> str:
     cliente = _obtener_cliente()
-    namespace = os.environ["OCI_NAMESPACE"]
-    bucket = os.environ["OCI_BUCKET_NAME"]
-    cliente.put_object(namespace, bucket, clave, contenido)
+    bucket = _obtener_bucket()
+    cliente.storage.from_(bucket).upload(
+        path=clave,
+        file=contenido,
+        file_options={"content-type": content_type, "upsert": "true"},
+    )
     return clave
 
 
 def leer(clave: str) -> bytes:
     cliente = _obtener_cliente()
-    namespace = os.environ["OCI_NAMESPACE"]
-    bucket = os.environ["OCI_BUCKET_NAME"]
-    respuesta = cliente.get_object(namespace, bucket, clave)
-    return respuesta.data.content
+    bucket = _obtener_bucket()
+    return cliente.storage.from_(bucket).download(clave)

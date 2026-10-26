@@ -1,4 +1,4 @@
-﻿from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from nuevamente.contratos import Chunk
 from nuevamente.rag import _dividir_en_chunks, indexar, recuperar
