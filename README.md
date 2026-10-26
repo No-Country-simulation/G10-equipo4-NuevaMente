@@ -4,7 +4,7 @@
 
 Sistema de RAG + agentes que adapta documentación técnica en contenido educativo personalizado (flashcards, tutoriales, quiz, TL;DR, guiones), según el perfil del destinatario, el nicho y el nivel de detalle deseado.
 
-Proyecto para el **Hackathon ONE Grupo 10** (Oracle Next Education & Alura). Despliegue objetivo: OCI (Oracle Cloud Infrastructure), tier Always Free.
+Proyecto para el **Hackathon ONE Grupo 10** (Oracle Next Education & Alura). Despliegue recomendado: **Streamlit Community Cloud** (gratis, directo desde GitHub). Alternativa: OCI (Oracle Cloud Infrastructure), tier Always Free. Ver [Despliegue en la web](#despliegue-en-la-web).
 
 ## Cómo funciona
 
@@ -27,8 +27,12 @@ Proyecto para el **Hackathon ONE Grupo 10** (Oracle Next Education & Alura). Des
 
 ```
 G10-equipo4-NuevaMente
+├─ .github
+│  └─ workflows
+│     └─ ci.yml           # CI: ruff + pytest en cada push/PR a main y develop
 ├─ .streamlit
-│  └─ config.toml         # Configuracion de Streamlit (barra de herramientas minima)
+│  ├─ config.toml         # Configuracion de Streamlit (barra de herramientas minima, modo claro)
+│  └─ secrets.toml.example # Plantilla de secretos para Streamlit Cloud (la real, secrets.toml, no se sube)
 ├─ app
 │  ├─ assets              # Favicon de la pestaña del navegador (favicon.png / .ico, apple-touch-icon)
 │  ├─ componente.py       # Componente custom + configurar_pagina() (titulo, favicon, layout)
@@ -56,26 +60,38 @@ G10-equipo4-NuevaMente
 │  │  └─ __init__.py      # Chunking + ChromaDB (indexar/recuperar con MMR)
 │  ├─ resiliencia.py      # Reintentos con espera ante limites de cuota del LLM
 │  └─ __init__.py
+├─ scripts
+│  ├─ prueba_recorrido.py     # Recorrido con embeddings reales y respuesta HTTP controlada (sin credenciales)
+│  └─ verificar_servicios.py  # Diagnostico real de Ollama/Gemini (--inferir hace una llamada real)
+├─ .env.example           # Plantilla de variables de entorno (la real, .env, no se sube)
+├─ NGROK.md               # Como exponer Ollama con un tunel ngrok
 ├─ pytest.ini
 ├─ README.md
-├─ requirements.txt
-└─ tests                  # Suite de pytest (206 tests)
+├─ requirements.txt       # Dependencias con versiones fijas
+└─ tests                  # Suite de pytest (240 tests)
+   ├─ conftest.py          # Cada prueba usa su propia cache aislada
+   ├─ helpers_contenido.py # Datos de ejemplo compartidos por las pruebas
    ├─ test_agentes.py
    ├─ test_almacenamiento.py
+   ├─ test_arranque.py     # main.py y demo.py renderizan su componente sin excepciones
    ├─ test_cache.py
+   ├─ test_continuidad_llm.py # Fallos controlados y cliente ChatOllama real por HTTP local
    ├─ test_contratos.py
    ├─ test_demo.py         # Modo demo, recursos de marca, fuentes locales y tildes en la UI
+   ├─ test_diagnostico.py  # El diagnostico distingue modelo disponible e inferencia por proveedor
    ├─ test_e2e.py
    ├─ test_errores.py
    ├─ test_flujo.py        # Generar, ruta, comparar, preguntar y valorar (sin red ni LLM)
    ├─ test_formatos.py
    ├─ test_historial.py
+   ├─ test_http_generacion.py # Grafo y ChatOllama reales contra un servidor HTTP controlado
    ├─ test_ingesta.py
    ├─ test_preguntas.py    # Preguntas con fuentes, idioma y ajustes en los prompts, indice por huella
    ├─ test_rag.py
    ├─ test_resiliencia.py
    ├─ test_robustez.py     # Configuracion, ingesta, nombres de coleccion, re-indexado, respaldo Ollama
-   └─ test_tema.py         # Modo claro por defecto e interruptor de modo oscuro
+   ├─ test_tema.py         # Modo claro por defecto e interruptor de modo oscuro
+   └─ test_textos_vacios.py # Un JSON bien formado pero sin contenido util tambien activa Gemini
 ```
 
 ## Formatos de salida
@@ -138,7 +154,7 @@ En Streamlit Cloud las mismas claves pueden ir en `.streamlit/secrets.toml` (ign
 
 Los archivos se aceptan hasta 10 MB. La primera vez que se indexa un documento, ChromaDB descarga su modelo de embeddings (unos 80 MB), por lo que esa primera generacion tarda mas y necesita salida a internet.
 
-**Proveedores**: Ollama es el principal por defecto; Gemini se usa si falla la construccion del cliente, la preparacion del formato, la llamada o la validacion de la respuesta. Configure una clave real de Gemini para disponer del respaldo. La conexion principal se configura mediante la URL HTTPS de un tunel ngrok activo hacia Ollama. `OLLAMA_BASE_URL` es obligatoria para construir el cliente Ollama: ya no se sustituye silenciosamente por localhost. Si falta, se intenta Gemini. Consulte [NGROK.md](NGROK.md) para iniciar el tunel y configurar la app. El notebook de Colab no esta incluido.
+**Proveedores**: Ollama es el principal por defecto; Gemini se usa si falla la construccion del cliente, la preparacion del formato, la llamada o la validacion de la respuesta. Configure una clave real de Gemini para disponer del respaldo. La conexion principal se configura mediante la URL HTTPS de un tunel ngrok activo hacia Ollama. `OLLAMA_BASE_URL` es obligatoria para construir el cliente Ollama: ya no se sustituye silenciosamente por localhost. Si falta, se intenta Gemini. Consulte [NGROK.md](NGROK.md) para iniciar el tunel y configurar la app. El notebook de Colab no esta incluido. Para comprobar la conexion antes de usar la app: `python scripts/verificar_servicios.py` (agregue `--inferir` para hacer una llamada real a cada proveedor; consume cuota de Gemini).
 
 Se realiza un intento por proveedor y por invocacion de agente. Ollama tiene un timeout de conexion de 5 segundos y un timeout de lectura configurable (60 segundos); Gemini usa 45 segundos y no acumula reintentos internos. Son limites de solicitudes/operaciones de red, no un plazo total de toda la generacion: el grafo tiene varias llamadas. Si ambos proveedores fallan se muestra un error; no se inventa contenido. Los materiales ya guardados en cache conservan su funcionamiento existente.
 
@@ -164,6 +180,46 @@ Usa el mismo componente y la misma lectura de archivos que `main.py`, pero respo
 ruff check .
 pytest
 ```
+
+El CI de GitHub (`.github/workflows/ci.yml`) corre exactamente estos dos comandos con Python 3.11 en cada push y pull request a `main` y `develop`.
+
+## Despliegue en la web
+
+### Antes de desplegar
+
+- **Codigo en `main`**: el hosting despliega desde una rama. Integren los cambios con un Pull Request hacia `develop` y luego de `develop` a `main`, siempre con el CI en verde.
+- **Proveedor de IA**: Ollama por ngrok solo funciona mientras el equipo con Ollama (o el Colab) y el tunel esten encendidos. Para un sitio disponible todo el tiempo use **Gemini** como principal: `LLM_PROVEEDOR = "gemini"` y una `GEMINI_API_KEY` real (se obtiene en Google AI Studio). El plan gratuito de Gemini tiene limite de solicitudes: cada material hace varias llamadas (Investigador, Redactor y Critico, con reintentos) y la "Ruta de estudio" genera 3 materiales.
+- **Versiones fijas**: `requirements.txt` fija las versiones que pasan las pruebas, para que el sitio no se rompa con una actualizacion de alguna libreria.
+
+### Opcion recomendada: Streamlit Community Cloud (gratis)
+
+1. Entrar a https://share.streamlit.io con la cuenta de GitHub y elegir **Create app**.
+2. Repositorio `No-Country-simulation/G10-equipo4-NuevaMente`, rama `main`, archivo principal **`app/main.py`**.
+3. En **Advanced settings**, elegir **Python 3.11** (la misma version del CI).
+4. En **Secrets**, pegar el contenido de `.streamlit/secrets.toml.example` con los valores reales. `nuevamente/config.py` lee primero las variables de entorno y luego `st.secrets`, asi que no hay que cambiar codigo.
+5. **Deploy**. Streamlit entrega una URL publica del tipo `https://<nombre>.streamlit.app`.
+
+Notas:
+
+- Como el repositorio pertenece a la organizacion **No-Country-simulation**, puede que un administrador de la organizacion tenga que autorizar la app de Streamlit en GitHub para que el repositorio aparezca. Si no aparece, se puede desplegar desde un fork personal.
+- Nunca suban `.env` ni `.streamlit/secrets.toml` (ya estan en `.gitignore`): las claves van solo en el panel de **Secrets**.
+- El indice de ChromaDB (`chroma_db/`) y la cache (`.cache_generacion/`) viven en el disco del servidor y se borran cuando la app se reinicia. No afecta el uso: los materiales viven en la sesion.
+- La primera generacion tras cada reinicio tarda mas porque ChromaDB descarga su modelo de embeddings (unos 80 MB).
+- La app se duerme tras un tiempo sin visitas y tarda unos segundos en despertar.
+
+### Almacenamiento en Supabase (opcional)
+
+Crear un proyecto en https://supabase.com, un bucket **privado** llamado `documentos` y usar la clave **service_role** en `SUPABASE_KEY`. Esa clave da acceso completo al proyecto: va solo en los Secrets del servidor, nunca en el codigo ni en el repositorio. Sin Supabase la app funciona igual y el resultado muestra "No se guardo en la nube".
+
+### Alternativa: OCI Always Free
+
+Tambien se puede desplegar en una VM de OCI (tier Always Free), pero requiere configurarla a mano:
+
+1. Crear la VM (Ubuntu), abrir el puerto 80/443 en la Security List y en el firewall de la VM.
+2. Instalar Python 3.11, clonar el repositorio, crear el entorno virtual e instalar `requirements.txt`.
+3. Crear el `.env` en la raiz con los valores reales.
+4. Ejecutar `streamlit run app/main.py --server.port 8501 --server.headless true` como servicio de `systemd` para que arranque solo.
+5. Poner un proxy inverso (por ejemplo, Nginx o Caddy) delante del puerto 8501 con HTTPS. El proxy debe permitir WebSockets, que Streamlit necesita.
 
 ## Identidad visual
 
