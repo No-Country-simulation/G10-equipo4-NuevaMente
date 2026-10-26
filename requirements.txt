@@ -1,4 +1,4 @@
-﻿pydantic>=2
+pydantic>=2
 streamlit
 pytest
 ruff
@@ -7,5 +7,7 @@ langgraph
 langchain-google-genai
 chromadb
 pypdf
-oci
 langchain-ollama
+supabase
+python-dotenv>=1.2.3
+httpx[socks]
